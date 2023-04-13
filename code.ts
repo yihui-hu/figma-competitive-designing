@@ -6,7 +6,7 @@
 // full browser environment (see documentation).
 
 // This shows the HTML page in "ui.html".
-figma.showUI(__html__);
+figma.showUI(__html__, { height: 520 });
 
 // optimizing node traversals
 figma.skipInvisibleInstanceChildren = true
@@ -18,14 +18,23 @@ const ARENA_API_BASE_URL = "https://api.are.na/v2";
 // error handling for empty channels (just check if images array is empty)
 // handle pagination
 // allow user input of custom channel slugs via URL
-// specify number of players --> create that number of canvases/src imgs
 
 // Calls to "parent.postMessage" from within the HTML page will trigger this
 // callback. The callback will be passed the "pluginMessage" property of the
 // posted message.
 figma.ui.onmessage = async msg => {
+  if (msg.type == "cancel") {
+    figma.closePlugin();
+  }
+
+  // get user inputs
+  const source_time = msg.source_time * 1000;
+  const num_players = parseInt(msg.num_players);
+  const playtime = msg.playtime;
+  const channelURL = msg.url.split("/");
+
   // get random image from are.na channel
-  const channelSlug = "humans-and-machines"
+  const channelSlug = channelURL[channelURL.length - 1];
   const response = await fetch(`${ARENA_API_BASE_URL}/channels/${channelSlug}/contents`);
   const json = await response.json();
   const images = json.contents.filter((content: any) => content.class === "Image" || content.class === "Link");
@@ -41,25 +50,28 @@ figma.ui.onmessage = async msg => {
     const imageNode = figma.createImageAsync(
       source
     ).then(async (image: Image) => {
-      // Create node
-      const node = figma.createRectangle()
-      node.name = "source-img";
+      // draw canvas + src img for each player
+      for (let i = 1; i < num_players + 1; i++) {
+        const node = figma.createRectangle()
+        node.name = "source-img";
+        node.x = 2292;
+        node.y = 1326 + ((i - 1) * 3963);
 
-      // Resize the node to match the image's width and height
-      const { width, height } = await image.getSizeAsync()
-      node.resize(width, height)
+        // resize the node to match the image's width and height
+        node.resize(2000, 2000)
 
-      // Set the fill on the node
-      node.fills = [
-        {
-          type: 'IMAGE',
-          imageHash: image.hash,
-          scaleMode: 'FILL'
-        }
-      ]
+        // Set the fill on the node
+        node.fills = [
+          {
+            type: 'IMAGE',
+            imageHash: image.hash,
+            scaleMode: 'FILL'
+          }
+        ]
 
-      figma.currentPage.appendChild(node);
-      nodes.push(node);
+        figma.currentPage.appendChild(node);
+        nodes.push(node);
+      }
     }).catch((error: any) => {
       console.log(error)
     })
@@ -88,11 +100,14 @@ figma.ui.onmessage = async msg => {
       try {
         for (const node of nodes) {
           node.remove()
+          figma.closePlugin();
         }
       } catch (err) {
         console.log(err);
       }
-    }, 5000);
+    }, source_time);
+
+    figma.ui.hide();
   }
 
   // Make sure to close the plugin when you're done. Otherwise the plugin will

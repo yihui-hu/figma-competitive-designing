@@ -43,6 +43,9 @@
       </select>
     </div>
 
+    <div id="message" class="label" 
+         style="display: none; color: red; margin-top: 20px; margin-bottom: -15px"></div>
+
     <div style="display: flex; gap: 10px; align-items: center; margin-top: 30px">
       <button id="create" class="button button--primary" style="cursor: pointer;">
         Get source
@@ -57,12 +60,14 @@
   </div>
 </body>
 
+<script src="./url_validator.js"></script>
+
 <!-- scripts to handle behaviour of plugin given user action -->
 <script>
 
   document.getElementById('create').onclick = () => {
     // default channel URL will point to are.na competitive designing repo
-    var url = "https://are.na/christina/social-z2y9uyfrhic"
+    var url = "https://www.are.na/christina/competitive-design-website-repo"
 
     var url_input = document.getElementById('url').value;
     if (url_input.trim().length != 0) {
@@ -87,12 +92,53 @@
     console.log("Number of players: " + num_players);
     console.log("Playtime: " + playtime + " minutes");
 
+    var playtime_text = "3:00";
+    switch (playtime) {
+      case "30":
+        playtime_text = "0:30";
+        break;
+      case "60":
+        playtime_text = "1:00";
+        break;
+      case "180":
+        playtime_text = "3:00";
+        break;
+      case "300":
+        playtime_text = "5:00";
+        break;
+      case "600":
+        playtime_text = "10:00";
+        break;
+      default:
+        playtime_text = "3:00";
+    }
+
+    var source_time_text = "0:30";
+    switch (source_time) {
+      case "10":
+        source_time_text = "0:10";
+        break;
+      case "30":
+        source_time_text = "0:30";
+        break;
+      case "45":
+        source_time_text = "0:45";
+        break;
+      case "60":
+        source_time_text = "1:00";
+        break;
+      default:
+        source_time_text = "0:30";
+    }
+
     parent.postMessage({
       pluginMessage: {
         type: 'get-source',
         url: url,
-        source_time: source_time,
         num_players: num_players,
+        source_time: source_time,
+        source_time_text: source_time_text,
+        playtime_text: playtime_text,
         playtime: playtime,
       }
     }, '*')
@@ -104,6 +150,12 @@
 
   document.getElementById('clear').onclick = () => {
     parent.postMessage({ pluginMessage: { type: 'clear' } }, '*')
+  }
+
+  onmessage = (event) => {
+    const message = event.data.pluginMessage.message;
+    document.getElementById("message").innerHTML = message;
+    document.getElementById("message").style.display = "block";
   }
 
 </script>

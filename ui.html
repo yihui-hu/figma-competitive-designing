@@ -64,6 +64,7 @@
 
 <!-- scripts to handle behaviour of plugin given user action -->
 <script>
+  console.clear();
 
   document.getElementById('create').onclick = () => {
     // default channel URL will point to are.na competitive designing repo
@@ -87,10 +88,6 @@
     // get playtime
     var pt_options = document.getElementById("playtime");
     var playtime = pt_options.options[pt_options.selectedIndex].value;
-
-    console.log("Time before source image disappears: " + source_time + " seconds");
-    console.log("Number of players: " + num_players);
-    console.log("Playtime: " + playtime + " minutes");
 
     var playtime_text = "3:00";
     switch (playtime) {
@@ -130,6 +127,10 @@
       default:
         source_time_text = "0:30";
     }
+
+    console.log("Time before source image disappears: " + source_time_text);
+    console.log("Number of players: " + num_players);
+    console.log("Playtime: " + playtime_text);
 
     parent.postMessage({
       pluginMessage: {

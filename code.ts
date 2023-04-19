@@ -1,17 +1,22 @@
 // TO-DO:
-// error handling for empty channels (just check if images array is empty)
-// handle pagination
-// coordinate playtime + disappearing time
-// custom num of players
-// save storage: are.na url, timers, etc.
+// DONE error handling for empty channels (just check if images array is empty)
+// DONE handle pagination
+// DONE coordinate playtime + disappearing time
+// DONE custom num of players
+// DONE test private channels
+// DONE reset board
+// DONE sync timing (loading in images and then starting the timer... lol) 
+// DONE error message styling
+// DONE choose num players via clicking player images
+// DONE error message
 // have header contain timer so when saving it you know how much time was spent on it
-// same images in a row
-// test private channels
-// reset?
-// sync timing (loading in images and then starting the timer... lol)
+// localstorage: are.na url, timers, etc.
+// clear board message using plugin message overlay
+// make window size constant
+// make play button wider (same width as cancel)
 
 // show the HTML page as designed in ui.html
-figma.showUI(__html__, { height: 450 });
+figma.showUI(__html__, { height: 400 });
 
 // for optimizing node traversals
 figma.skipInvisibleInstanceChildren = true;
@@ -37,7 +42,7 @@ figma.ui.onmessage = async (msg) => {
     case "cancel":
       figma.closePlugin();
       break;
-    case "get-source":
+    case "play":
       playGame(msg);
       break;
     case "clear":
@@ -57,11 +62,8 @@ async function playGame(msg: any) {
   const playtime_text = msg.playtime_text;
   const num_players = parseInt(msg.num_players);
   const channelURL = msg.url.split("/");
-
-  // get random image from specified are.na channel
+  
   const channelSlug = channelURL[channelURL.length - 1];
-
-  // enclose in try-catch block later on
   var images = [];
 
   try {
@@ -79,14 +81,14 @@ async function playGame(msg: any) {
     console.log(images);
   } catch (err) {
     figma.ui.postMessage({ message: "Are.na channel does not exist." });
-    figma.ui.resize(300, 480);
+    figma.ui.resize(300, 450);
     return;
   }
 
   // if are.na link is valid but channel is empty
   if (images.length === 0) {
     figma.ui.postMessage({ message: "Are.na channel has no images / links." });
-    figma.ui.resize(300, 480);
+    figma.ui.resize(300, 450);
     return;
   }
 
@@ -106,10 +108,6 @@ async function playGame(msg: any) {
 
   const playtime_timers = tree.findAll((node) => {
     return node.name === "playtime-timer";
-  });
-
-  const source_timers = tree.findAll((node) => {
-    return node.name === "source-timer";
   });
 
   // draw canvas, src img & timer for each player
@@ -225,6 +223,7 @@ async function playGame(msg: any) {
         try {
           for (const src_img of src_imgs) {
             src_img.visible = true;
+            figma.ui.postMessage({ message: "" });
             figma.ui.show();
           }
         } catch (err) {

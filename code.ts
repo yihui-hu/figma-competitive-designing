@@ -9,245 +9,273 @@
 // DONE error message styling
 // DONE choose num players via clicking player images
 // DONE error message
+// DONE clear board message using plugin message overlay + loading message
+// DONE make window size constant
+// DONE make play button wider (same width as cancel)
+// DONE localstorage: are.na url, timers, etc.
+// what if they copy paste it??? how to avoid clearing it accidentally :p
 // have header contain timer so when saving it you know how much time was spent on it
-// localstorage: are.na url, timers, etc.
-// clear board message using plugin message overlay
-// make window size constant
-// make play button wider (same width as cancel)
+// 5 second timer before game starts
+// clean up css
+// upload css style to unpkg or external service
+// clean up code; rename variables (memotime? etc.)
+// automatically move canvases when playing for second time? hmm....... tough........ or move to another page?
+// reset play area / archive area layouts (if people accidentally / maliciously move stuff around in community file?)
+// webpack bundling
 
-// show the HTML page as designed in ui.html
-figma.showUI(__html__, { height: 400 });
+console.clear();
 
-// for optimizing node traversals
+// show the HTML page for the plugin as designed in ui.html
+figma.showUI(__html__, { height: 385 });
+
+// get saved settings from storage
+async function getStorage() {
+  const arena_url = await figma.clientStorage.getAsync("arena_url");
+  const players = await figma.clientStorage.getAsync("players");
+  const memo_time = await figma.clientStorage.getAsync("memo_time");
+  const playtime = await figma.clientStorage.getAsync("playtime");
+  const storage = {
+    arena_url: arena_url,
+    players: players,
+    memo_time: memo_time,
+    playtime: playtime
+  }
+  figma.ui.postMessage({ type: "storage", storage: storage });
+}
+getStorage();
+
+// for optimizing node traversals later
 figma.skipInvisibleInstanceChildren = true;
 
-// initialize are.na API URL
+// initialize default are.na API URL
 const ARENA_API_BASE_URL = "https://api.are.na/v2";
 
-// coordinates for placing canvases + img_src
-const src_x = 1300, canvas_x = 0, playtimer_x = 0, sourcetimer_x = 1300;
-function timer_y(i: number) {
-  return 712 + (i - 1) * 1783;
-}
-function coords_y(i: number) {
-  return 965 + (i - 1) * 1783;
-}
+// reference coordinates
+const right_x = 1300, left_x = 0
+function timer_y(i: number) { return 712 + (i - 1) * 1783; }
+function src_canvas_y(i: number) { return 965 + (i - 1) * 1783; }
 
-// calls to "parent.postMessage" from the ui.html
-// triggers the callback, which will be passed
-// the "pluginMessage" property of the posted msg;
-// different actions executed depending on user action
 figma.ui.onmessage = async (msg) => {
   switch (msg.type) {
-    case "cancel":
-      figma.closePlugin();
-      break;
     case "play":
       playGame(msg);
       break;
     case "clear":
       clearBoard();
       break;
+    case "cancel":
+      figma.closePlugin();
+      break;
     default:
       figma.closePlugin();
   }
 };
 
-// function to set up board and initiate game
+// set up play area and initiate game
 async function playGame(msg: any) {
   // get user params
-  const source_time = msg.source_time * 1000;
-  const source_time_text = msg.source_time_text;
+  const memotime = msg.memotime * 1000;
+  const memotime_text = msg.memotime_text;
   const playtime = msg.playtime * 1000;
   const playtime_text = msg.playtime_text;
   const num_players = parseInt(msg.num_players);
   const channelURL = msg.url.split("/");
-  
   const channelSlug = channelURL[channelURL.length - 1];
-  var images = [];
 
+  // set storage for user params
+  await figma.clientStorage.setAsync("players", msg.num_players_index);
+  await figma.clientStorage.setAsync("memo_time", msg.memotime_index);
+  await figma.clientStorage.setAsync("playtime", msg.playtime_index);
+  
+  const loading = figma.notify("Loading...", { timeout: Infinity });
+
+  // get url to random source image from are.na channel
+  var source_img: string;
   try {
-    // get random page number from are.na channel
     const page_number = await getPageNumber(ARENA_API_BASE_URL, channelSlug);
-
-    // get images from random page from are.na channel
     const response = await fetch(
       `${ARENA_API_BASE_URL}/channels/${channelSlug}/contents?page=${page_number}`
     );
     const json = await response.json();
-    images = json.contents.filter(
+    const images = json.contents.filter(
       (content: any) => content.class === "Image" || content.class === "Link"
     );
     console.log(images);
+
+    // if are.na link is valid but channel is empty, exit
+    if (images.length === 0) {
+      figma.ui.postMessage({ type: "error", message: "Are.na channel has no images / links." });
+      loading.cancel();
+      return;
+    }
+
+    // get random image from images from are.na channel
+    const randomIndex = Math.floor(Math.random() * images.length);
+    source_img = images[randomIndex].image.large.url;
   } catch (err) {
-    figma.ui.postMessage({ message: "Are.na channel does not exist." });
-    figma.ui.resize(300, 450);
+    figma.ui.postMessage({ type: "error", message: "Are.na channel does not exist." });
+    loading.cancel();
     return;
   }
 
-  // if are.na link is valid but channel is empty
-  if (images.length === 0) {
-    figma.ui.postMessage({ message: "Are.na channel has no images / links." });
-    figma.ui.resize(300, 450);
-    return;
-  }
-
-  // get random image from images from are.na channel
-  const randomIndex = Math.floor(Math.random() * images.length);
-  const source = images[randomIndex].image.large.url;
+  await figma.clientStorage.setAsync("arena_url", msg.url);
+  figma.ui.hide();
 
   const tree = figma.currentPage;
+  const src_imgs = tree.findAll((node) => { return node.name === "source-img"; });
+  const canvases = tree.findAll((node) => { return node.name === "canvas"; });
+  const memotimers = tree.findAll((node) => { return node.name === "memotimer"; });
+  const playtimers = tree.findAll((node) => { return node.name === "playtimer"; });
+  const countdowntimers = tree.findAll((node) => { return node.name === "countdowntimer"; });
 
-  const src_imgs = tree.findAll((node) => {
-    return node.name === "source-img";
-  });
+  // draw canvas, src img & timer(s) for each player
+  const imageNode = figma.createImageAsync(source_img).then(async (image: Image) => {
+    await figma.loadFontAsync({ family: "Inter", style: "Regular" });
 
-  const canvases = tree.findAll((node) => {
-    return node.name === "canvas";
-  });
+    for (let i = 1; i < num_players + 1; i++) {
+      // create src imgs
+      const source_img = figma.createRectangle();
+      source_img.name = "source-img";
+      source_img.x = right_x;
+      source_img.y = src_canvas_y(i);
+      source_img.resize(1000, 1000);
+      source_img.fills = [
+        {
+          type: "IMAGE",
+          imageHash: image.hash,
+          scaleMode: "FILL",
+        },
+      ];
+      source_img.visible = false;
 
-  const playtime_timers = tree.findAll((node) => {
-    return node.name === "playtime-timer";
-  });
+      // create blank canvases
+      const canvas = figma.createFrame();
+      canvas.name = "canvas";
+      canvas.x = left_x;
+      canvas.y = src_canvas_y(i);
+      canvas.resize(1000, 1000);
 
-  // draw canvas, src img & timer for each player
-  const imageNode = figma
-    .createImageAsync(source)
-    .then(async (image: Image) => {
-      await figma.loadFontAsync({ family: "Inter", style: "Regular" });
-      for (let i = 1; i < num_players + 1; i++) {
-        // create src imgs
-        const node = figma.createRectangle();
-        node.name = "source-img";
-        node.x = src_x;
-        node.y = coords_y(i);
-        node.resize(1000, 1000);
-        node.fills = [
-          {
-            type: "IMAGE",
-            imageHash: image.hash,
-            scaleMode: "FILL",
-          },
-        ];
+      // create countdown timers
+      const countdowntimer = figma.createText();
+      countdowntimer.name = "countdowntimer";
+      countdowntimer.characters = "Starting in: 0:05";
+      countdowntimer.x = right_x;
+      countdowntimer.y = timer_y(i);
+      countdowntimer.fontSize = 100;
+      countdowntimer.fills = [
+        {
+          blendMode: "NORMAL",
+          color: { r: 1, g: 1, b: 1 },
+          opacity: 1,
+          type: "SOLID",
+          visible: true,
+        },
+      ];
+      start(countdowntimer, "Starting in: ");
 
-        // create blank canvases
-        const canvas = figma.createFrame();
-        canvas.name = "canvas";
-        canvas.x = canvas_x;
-        canvas.y = coords_y(i);
-        canvas.resize(1000, 1000);
+      figma.currentPage.appendChild(countdowntimer);
+      figma.currentPage.appendChild(source_img);
+      figma.currentPage.appendChild(canvas);
+      src_imgs.push(source_img);
+      canvases.push(canvas);
+      countdowntimers.push(countdowntimer);
 
-        // create source-img timers
-        const sourcetimer = figma.createText();
-        sourcetimer.name = "source-timer";
-        sourcetimer.characters = "Timer: " + source_time_text;
-        sourcetimer.x = sourcetimer_x;
-        sourcetimer.y = timer_y(i);
-        sourcetimer.fontSize = 100;
-        sourcetimer.fills = [
-          {
-            blendMode: "NORMAL",
-            color: { r: 1, g: 1, b: 1 },
-            opacity: 1,
-            type: "SOLID",
-            visible: true,
-          },
-        ];
+      loading.cancel();
+    }
 
-        start(sourcetimer);
-        console.log("Started source timer...");
+    // set timer to remove countdown timer & create memo timers
+    setTimeout(() => {
+      try {
+        for (const src_img of src_imgs) { src_img.visible = true; }
+        for (const node of countdowntimers) { node.remove(); }
 
-        figma.currentPage.appendChild(sourcetimer);
-        playtime_timers.push(sourcetimer);
+        for (let i = 1; i < num_players + 1; i++) {
+          // create memo timers
+          const memotimer = figma.createText();
+          memotimer.name = "memotimer";
+          memotimer.characters = "Disappears in: " + memotime_text;
+          memotimer.x = right_x;
+          memotimer.y = timer_y(i);
+          memotimer.fontSize = 100;
+          memotimer.fills = [
+            {
+              blendMode: "NORMAL",
+              color: { r: 1, g: 1, b: 1 },
+              opacity: 1,
+              type: "SOLID",
+              visible: true,
+            },
+          ];
+          start(memotimer, "Disappears in: ");
 
-        // add canvases + src images
-        figma.currentPage.appendChild(node);
-        figma.currentPage.appendChild(canvas);
-        src_imgs.push(node);
-        canvases.push(canvas);
+          figma.currentPage.appendChild(memotimer);
+          memotimers.push(memotimer);
+        }
+      } catch (err) {
+        console.log(err);
       }
-    
-      figma.ui.hide();
-    
-      // set timer to hide src img & src timers
-    
-      console.log("Setting timeout...?");
-    
-      setTimeout(() => {
-        try {
-          for (const src_img of src_imgs) {
-            src_img.visible = false;
-          }
-    
-          // remove source timers 
-          const tree = figma.currentPage;
-    
-          const source_timers = tree.findAll((node) => {
-            return node.name === "source-timer";
-          });
-    
-          for (const node of source_timers) {
-            node.remove();
-          }
-    
-          for (let i = 1; i < num_players + 1; i++) {
-            // create timers
-            const playtimer = figma.createText();
-            playtimer.name = "playtime-timer";
-            playtimer.characters = "Timer: " + playtime_text;
-            playtimer.x = playtimer_x;
-            playtimer.y = timer_y(i);
-            playtimer.fontSize = 100;
-            playtimer.fills = [
-              {
-                blendMode: "NORMAL",
-                color: { r: 1, g: 1, b: 1 },
-                opacity: 1,
-                type: "SOLID",
-                visible: true,
-              },
-            ];
-    
-            start(playtimer);
-    
-            figma.currentPage.appendChild(playtimer);
-            playtime_timers.push(playtimer);
-          }
-        } catch (err) {
-          console.log(err);
+    }, 5000);
+
+    // set timer to hide src img & remove memo timers + create playtime timers    
+    setTimeout(() => {
+      try {
+        for (const src_img of src_imgs) { src_img.visible = false; }
+        for (const node of memotimers) { node.remove(); }
+
+        for (let i = 1; i < num_players + 1; i++) {
+          // create timers
+          const playtimer = figma.createText();
+          playtimer.name = "playtimer";
+          playtimer.characters = "Time left: " + playtime_text;
+          playtimer.x = left_x;
+          playtimer.y = timer_y(i);
+          playtimer.fontSize = 100;
+          playtimer.fills = [
+            {
+              blendMode: "NORMAL",
+              color: { r: 1, g: 1, b: 1 },
+              opacity: 1,
+              type: "SOLID",
+              visible: true,
+            },
+          ];
+          start(playtimer, "Time left: ");
+
+          figma.currentPage.appendChild(playtimer);
+          playtimers.push(playtimer);
         }
-      }, source_time);
-    
-      // set timer for game duration + show src img once round ends
-      setTimeout(() => {
-        try {
-          for (const src_img of src_imgs) {
-            src_img.visible = true;
-            figma.ui.postMessage({ message: "" });
-            figma.ui.show();
-          }
-        } catch (err) {
-          console.log(err);
-        }
-      }, playtime + source_time);
-    })
-    .catch((error: any) => {
-      console.log(error);
-    });
+      } catch (err) {
+        console.log(err);
+      }
+    }, memotime + 5000);
+
+    // set timer for game duration + show src img once round ends
+    setTimeout(() => {
+      try {
+        for (const src_img of src_imgs) { src_img.visible = true; }
+        for (const playtimer of playtimers) { playtimer.remove(); }
+
+        figma.ui.postMessage({ type: "error", message: "" });
+        figma.ui.show();
+      } catch (err) {
+        console.log(err);
+      }
+    }, playtime + memotime + 5000);
+  }).catch((error: any) => {
+    console.log(error);
+  });
 }
 
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 const secondsSet = [86400, 3600, 60, 1];
 
-// function to start timer
-function start(node: TextNode) {
+function start(node: TextNode, text: string) {
   var timeString = node.characters;
-  timeString = timeString.replace("Timer: ", "");
-
+  timeString = timeString.replace(text, "");
   var seconds = getRemainingSeconds(timeString);
   var template = getTemplateFromString(timeString);
 
-  startTimer(node, seconds, template);
+  startTimer(node, seconds, template, text);
 }
 
 function getRemainingSeconds(timeString: string): number {
@@ -277,8 +305,8 @@ function getTemplateFromString(timeString: string): string {
   return result;
 }
 
-async function startTimer(node: TextNode, seconds: number, 
-                          template: string) {
+async function startTimer(node: TextNode, seconds: number,
+  template: string, text: string) {
   await figma.loadFontAsync(node.fontName as FontName);
 
   var keepItRunning = true;
@@ -287,13 +315,13 @@ async function startTimer(node: TextNode, seconds: number,
 
   // this loop updates all timers every second
   while (keepItRunning) {
-      if (secondsToGo > 0) {
-        newText = fillUpTimeStringWithTemplate(secondsToInterval(secondsToGo), template);
-      } else {
-        newText = "Done"
-      }
-      node.characters = "Timer: " + newText;
-      secondsToGo -= 1;
+    if (secondsToGo > 0) {
+      newText = fillUpTimeStringWithTemplate(secondsToInterval(secondsToGo), template);
+    } else {
+      newText = "Done"
+    }
+    node.characters = text + newText;
+    secondsToGo -= 1;
     await delay(1000);
   }
 }
@@ -324,15 +352,21 @@ function fillUpTimeStringWithTemplate(timeString: string, template: string): str
 
 // function to get random page number from are.na channel
 async function getPageNumber(ARENA_API_BASE_URL: string, channelSlug: string) {
-  const temp_res = await fetch(
-    `${ARENA_API_BASE_URL}/channels/${channelSlug}`
-  );
-  const temp_json = await temp_res.json();
-  var pages = Math.ceil(temp_json.length / 20);
-  console.log("Channel has " + pages + " pages.");
-  var page_number = Math.floor(Math.random() * pages);
-  console.log("Selecting page number " + page_number + "...");
-  return page_number;
+  try {
+    const res = await fetch(`${ARENA_API_BASE_URL}/channels/${channelSlug}`);
+    const json = await res.json();
+
+    const pages = Math.ceil(json.length / 20);
+    console.log("Channel has " + pages + " pages.");
+
+    const page_number = Math.floor(Math.random() * pages);
+    console.log("Selecting page number " + page_number + "...");
+
+    return page_number;
+  } catch (err) {
+    figma.ui.postMessage({ type: "error", message: "Are.na channel does not exist." });
+    return;
+  }
 }
 
 // function to clear the board after every game (user directed action)
@@ -343,13 +377,15 @@ function clearBoard() {
     return (
       node.name === "source-img" ||
       node.name === "canvas" ||
-      node.name === "sticky" ||
-      node.name === "playtime-timer" ||
-      node.name === "source-timer"
+      node.name === "playtimer" ||
+      node.name === "memotimer" ||
+      node.name === "countdowntimer"
     );
   });
 
   for (const node of nodes) {
     node.remove();
   }
+
+  figma.notify("Board cleared ✨", { timeout: 1500, button: { text: "✕", action: () => { return true } } });
 }

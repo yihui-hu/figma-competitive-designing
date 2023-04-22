@@ -1,17 +1,20 @@
 {
-  "name": "Competitive-Designing",
+  "name": "Competitive Designing",
   "version": "1.0.0",
-  "description": "Your Figma Plugin",
-  "main": "code.js",
+  "description": "Figma PLugin for the Competitive Designing Mind Sport",
+  "main": "dist/code.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "webpack",
     "watch": "npm run build -- --watch"
   },
-  "author": "",
-  "license": "",
+  "author": "christina & yihui",
+  "license": "MIT",
   "devDependencies": {
     "@figma/plugin-typings": "*",
-    "typescript": "*"
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.4",
+    "webpack": "^5.80.0",
+    "webpack-cli": "^5.0.2"
   },
   "dependencies": {
     "figma-plugin-ds": "^1.0.1"

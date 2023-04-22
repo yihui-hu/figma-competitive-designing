@@ -13,9 +13,9 @@
 // DONE make window size constant
 // DONE make play button wider (same width as cancel)
 // DONE localstorage: are.na url, timers, etc.
+// DONE 5 second timer before game starts
 // what if they copy paste it??? how to avoid clearing it accidentally :p
 // have header contain timer so when saving it you know how much time was spent on it
-// 5 second timer before game starts
 // clean up css
 // upload css style to unpkg or external service
 // clean up code; rename variables (memotime? etc.)

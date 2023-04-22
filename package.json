@@ -1,7 +1,7 @@
 {
-  "name": "Competitive Designing",
+  "name": "competitive-designing",
   "version": "1.0.0",
-  "description": "Figma PLugin for the Competitive Designing Mind Sport",
+  "description": "Figma Plugin for the Competitive Designing Mind Sport",
   "main": "dist/code.js",
   "scripts": {
     "build": "webpack",

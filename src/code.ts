@@ -43,6 +43,9 @@ figma.ui.onmessage = async (msg) => {
     case "clear":
       clearBoard();
       break;
+    case "updateHeader":
+      updateHeader(msg.times);
+      break;
     case "cancel":
       figma.closePlugin();
       break;
@@ -200,4 +203,14 @@ function clearBoard() {
   }
 
   figma.notify("Board cleared ✨", { timeout: 1500, button: { text: "✕", action: () => { return true } } });
+}
+
+async function updateHeader(times: {memotime: string, playtime: string}) {
+  try {
+    await figma.loadFontAsync({ family: "IBM Plex Mono", style: "Bold" });
+    const header = figma.currentPage.findChild(n => n.type === "TEXT" && n.name === "Header");
+    (header as TextNode).characters = `You will have ${times.memotime} to memorize\nthe design and ${times.playtime} to replicate it.`;
+  } catch (err) {
+    console.log(err)
+  }
 }

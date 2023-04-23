@@ -377,14 +377,14 @@
   <div style="margin: 18px;">
     <div style="margin-top: 20px; display: inline !important; font-size: 12px;">
       You will have
-      <select name="memotime" id="memotime">
+      <select name="memotime" id="memotime" onchange="updateHeader()">
         <option value="10">10 seconds</option>
         <option value="30" selected>30 seconds</option>
         <option value="45">45 seconds</option>
         <option value="60">60 seconds</option>
       </select>
       to memorize the design and
-      <select name="playtime" id="playtime">
+      <select name="playtime" id="playtime" onchange="updateHeader()">
         <option value="30">30 secs</option>
         <option value="60">1 minute</option>
         <option value="180" selected>3 minutes</option>
@@ -557,6 +557,17 @@
       document.getElementById(id).style.filter = "saturate(0%)";
       document.getElementById(id).style.opacity = "20%";
     }
+  }
+
+  // Update header message on Figma canvas
+  function updateHeader() {
+    const memotime = document.getElementById("memotime");
+    const playtime = document.getElementById("playtime");
+    const times = {
+      memotime: memotime.options[memotime.selectedIndex].text,
+      playtime: playtime.options[playtime.selectedIndex].text,
+    }
+    parent.postMessage({ pluginMessage: { type: "updateHeader", times: times } }, '*')
   }
 
   // Hide error message

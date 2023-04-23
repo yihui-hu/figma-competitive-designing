@@ -2,22 +2,24 @@
   "name": "competitive-designing",
   "version": "1.0.0",
   "description": "Figma Plugin for the Competitive Designing Mind Sport",
-  "main": "dist/code.js",
-  "types": "figma.d.ts",
+  "main": "/dist/code.js",
   "scripts": {
     "build": "webpack",
     "watch": "npm run build -- --watch"
   },
-  "contributors": [{
-    "name": "Christina Chen",
-    "url": "https://christinalj.com"
-  }, {
-    "name": "Yihui Hu",
-    "url": "https://yhhu.xyz"
-  }],
+  "contributors": [
+    {
+      "name": "Christina Chen",
+      "url": "https://christinalj.com"
+    },
+    {
+      "name": "Yihui Hu",
+      "url": "https://yhhu.xyz"
+    }
+  ],
+  "license": "MIT",
   "homepage": "https://github.com/yihui-hu/figma-competitive-design",
   "issues": "https://github.com/yihui-hu/figma-competitive-design/issues",
-  "license": "MIT",
   "devDependencies": {
     "@figma/plugin-typings": "*",
     "ts-loader": "^9.4.2",

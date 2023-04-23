@@ -421,8 +421,6 @@
   </div>
 
   <footer style="position: absolute; bottom: 0px; margin: 18px; background-color: white;">
-    <!-- <hr style="width: 100vw; margin-inline: -18px; border: 0.5px solid #e5e5e5"> -->
-
     <div style="margin-top: 20px;">
       <input type="input" class="input__field" name="url" id="url"
         placeholder="Optional: Link to ✶✶ Are.na channel"></input>
@@ -473,20 +471,20 @@
   </div>
 </body>
 
-<!-- scripts to load storage and display error messages -->
+<!-- Scripts to load storage and display error messages -->
 <script>
-  // handle error messages sent back from server + restore saved settings
+  // Handle error messages sent back from server + restore saved settings
   onmessage = (event) => {
     const type = event.data.pluginMessage.type;
     const message = event.data.pluginMessage.message;
     if (type == "error") {
       document.getElementById("message").innerHTML =
         `<div style="display: flex; margin-top: -11px;">
-        <svg style="margin-top: 9px; margin-right: 8px;" width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path fill-rule="evenodd" clip-rule="evenodd" d="M6.43921 1.36668C6.72594 0.856941 7.45985 0.85694 7.74658 1.36668L13.0991 10.8823C13.3803 11.3823 13.0191 12 12.4454 12H1.74035C1.16673 12 0.805445 11.3823 1.08667 10.8823L6.43921 1.36668ZM7.09277 4.18555C7.45176 4.18555 7.74277 4.47657 7.74277 4.83555V7.11192C7.74277 7.47091 7.45176 7.76192 7.09277 7.76192C6.73379 7.76192 6.44277 7.47091 6.44277 7.11192V4.83555C6.44277 4.47657 6.73379 4.18555 7.09277 4.18555ZM7.84277 9.78834C7.84277 9.37413 7.50699 9.03834 7.09277 9.03834C6.67856 9.03834 6.34277 9.37413 6.34277 9.78834V9.83889C6.34277 10.2531 6.67856 10.5889 7.09277 10.5889C7.50699 10.5889 7.84277 10.2531 7.84277 9.83889V9.78834Z" fill="#F24822"/>
-        </svg>
-        <h6 class="label" style="color: #F24822;">${message}</h6>
-      </div>`;
+          <svg style="margin-top: 9px; margin-right: 8px;" width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M6.43921 1.36668C6.72594 0.856941 7.45985 0.85694 7.74658 1.36668L13.0991 10.8823C13.3803 11.3823 13.0191 12 12.4454 12H1.74035C1.16673 12 0.805445 11.3823 1.08667 10.8823L6.43921 1.36668ZM7.09277 4.18555C7.45176 4.18555 7.74277 4.47657 7.74277 4.83555V7.11192C7.74277 7.47091 7.45176 7.76192 7.09277 7.76192C6.73379 7.76192 6.44277 7.47091 6.44277 7.11192V4.83555C6.44277 4.47657 6.73379 4.18555 7.09277 4.18555ZM7.84277 9.78834C7.84277 9.37413 7.50699 9.03834 7.09277 9.03834C6.67856 9.03834 6.34277 9.37413 6.34277 9.78834V9.83889C6.34277 10.2531 6.67856 10.5889 7.09277 10.5889C7.50699 10.5889 7.84277 10.2531 7.84277 9.83889V9.78834Z" fill="#F24822"/>
+          </svg>
+          <h6 class="label" style="color: #F24822;">${message}</h6>
+        </div>`;
       document.getElementById("message").style.display = message != "" ? "block" : "none";
     } else if (type == "storage") {
       const storage = event.data.pluginMessage.storage;
@@ -503,7 +501,7 @@
       if (players != undefined) document.getElementById("players").selectedIndex = players;
       if (playtime != undefined) document.getElementById("playtime").selectedIndex = playtime;
 
-      // get initial selected num of players & desaturate accordingly
+      // Get initial number of players & (de)saturate accordingly
       var num_players = document.getElementById("players").selectedIndex + 1
       for (var j = 1; j <= num_players; j++) {
         delay(j);
@@ -520,9 +518,9 @@
   }
 </script>
 
-<!-- helper scripts -->
+<!-- Auxilliary UI scripts -->
 <script>
-  // animate broom when hovering over clear board button
+  // Animate broom when hovering over clear board button
   document.getElementById("clear").addEventListener("mouseover", (event) => {
     document.getElementById("broom").style.transform = "rotate(10deg)";
   })
@@ -530,7 +528,7 @@
     document.getElementById("broom").style.transform = "rotate(0deg)";
   })
 
-  // display modal when info button is pressed
+  // Display modal when info button is pressed
   function infoButtonPressed() {
     const hidden = document.getElementById("modal").style.display == "" || document.getElementById("modal").style.display == "none";
     if (hidden) {
@@ -544,7 +542,7 @@
     updatePlayerImgs(event.target.selectedIndex + 1);
   });
 
-  // update 'character selection' when num of players changes
+  // Update character selection highlights when number of players changes
   function updatePlayerImgs(index) {
     document.getElementById("players").selectedIndex = index - 1;
 
@@ -561,20 +559,20 @@
     }
   }
 
-  // hide error message
+  // Hide error message
   document.getElementById("url").addEventListener("input", (event) => {
     document.getElementById("message").style.display = "none";
   })
 
 </script>
 
-<!-- scripts to handle behaviour of plugin given user action -->
+<!-- Scripts to handle behaviour of plugin given user action -->
 <script>
   document.getElementById("play").onclick = () => {
-    // clear previous error message
+    // Clear previous error message
     document.getElementById("message").style.display = "none";
 
-    // default channel URL will point to are.na competitive designing repo
+    // Default channel URL will point to are.na competitive designing repo
     var url = "https://www.are.na/christina/competitive-design-website-repo"
 
     var url_input = document.getElementById('url').value;
@@ -583,17 +581,17 @@
     }
     console.log("Are.na source URL: " + url);
 
-    // get source/screenshot time before disappearing
+    // Get source/screenshot time before disappearing
     var mt_options = document.getElementById("memotime");
     var memotime = mt_options.options[mt_options.selectedIndex].value;
     var memotime_index = mt_options.selectedIndex;
 
-    // get num players
+    // Get num players
     var np_options = document.getElementById("players");
     var num_players = np_options.options[np_options.selectedIndex].value;
     var num_players_index = np_options.selectedIndex;
 
-    // get playtime
+    // Get playtime
     var pt_options = document.getElementById("playtime");
     var playtime = pt_options.options[pt_options.selectedIndex].value;
     var playtime_index = pt_options.selectedIndex;

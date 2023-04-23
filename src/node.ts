@@ -3,7 +3,7 @@
  * black canvases in Figma.
  * 
  * @param {number} i/index - The parameter "i" or "index" is a number used to 
- * determine the position of the timer and source image on the canvas.
+ * determine the position of the nodes on the canvas.
  * 
  * `createTimer` returns a text node, 
  * `createSourceImage` returns a rectangle node with an image fill 

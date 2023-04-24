@@ -1,4 +1,5 @@
 <head>
+  <!-- Styles adapted from https://github.com/thomas-lowry/figma-plugin-ds -->
   <style>
     a {
       color: black;
@@ -378,6 +379,7 @@
     <div style="margin-top: 20px; display: inline !important; font-size: 12px;">
       You will have
       <select name="memotime" id="memotime" onchange="updateHeader()">
+        <option value="1">1 second</option>
         <option value="10">10 seconds</option>
         <option value="30" selected>30 seconds</option>
         <option value="45">45 seconds</option>
@@ -385,7 +387,7 @@
       </select>
       to memorize the design and
       <select name="playtime" id="playtime" onchange="updateHeader()">
-        <option value="30">30 secs</option>
+        <option value="1">1 second</option>
         <option value="60">1 minute</option>
         <option value="180" selected>3 minutes</option>
         <option value="300">5 minutes</option>
@@ -488,7 +490,6 @@
       document.getElementById("message").style.display = message != "" ? "block" : "none";
     } else if (type == "storage") {
       const storage = event.data.pluginMessage.storage;
-      console.log(storage);
       const arena_url = storage.arena_url;
       const memo_time = storage.memo_time;
       const players = storage.players;
@@ -542,7 +543,7 @@
     updatePlayerImgs(event.target.selectedIndex + 1);
   });
 
-  // Update character selection highlights when number of players changes
+  // Update template & character highlights when number of players changes
   function updatePlayerImgs(index) {
     document.getElementById("players").selectedIndex = index - 1;
 
@@ -557,6 +558,8 @@
       document.getElementById(id).style.filter = "saturate(0%)";
       document.getElementById(id).style.opacity = "20%";
     }
+
+    parent.postMessage({ pluginMessage: { type: "updateTemplate", index: index } }, '*');
   }
 
   // Update header message on Figma canvas
@@ -607,10 +610,34 @@
     var playtime = pt_options.options[pt_options.selectedIndex].value;
     var playtime_index = pt_options.selectedIndex;
 
+    var memotime_text = "0:30";
+    switch (memotime) {
+      case "1":
+        memotime_text = "0:01";
+        break;
+      case "10":
+        memotime_text = "0:10";
+        break;
+      case "30":
+        memotime_text = "0:30";
+        break;
+      case "45":
+        memotime_text = "0:45";
+        break;
+      case "60":
+        memotime_text = "1:00";
+        break;
+      default:
+        memotime_text = "0:30";
+    }
+
     var playtime_text = "3:00";
     switch (playtime) {
-      case "30":
-        playtime_text = "0:30";
+      case "1":
+        playtime_text = "0:01";
+        break;
+      case "10":
+        playtime_text = "0:10";
         break;
       case "60":
         playtime_text = "1:00";
@@ -626,24 +653,6 @@
         break;
       default:
         playtime_text = "3:00";
-    }
-
-    var memotime_text = "0:30";
-    switch (memotime) {
-      case "10":
-        memotime_text = "0:10";
-        break;
-      case "30":
-        memotime_text = "0:30";
-        break;
-      case "45":
-        memotime_text = "0:45";
-        break;
-      case "60":
-        memotime_text = "1:00";
-        break;
-      default:
-        memotime_text = "0:30";
     }
 
     console.log("Time before source image disappears: " + memotime_text);

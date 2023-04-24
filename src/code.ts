@@ -18,11 +18,13 @@ async function getStorage() {
   const players = await figma.clientStorage.getAsync("players");
   const memo_time = await figma.clientStorage.getAsync("memo_time");
   const playtime = await figma.clientStorage.getAsync("playtime");
+  const pages = await figma.clientStorage.getAsync("pages");
   const storage = {
     arena_url: arena_url,
     players: players,
     memo_time: memo_time,
     playtime: playtime,
+    pages: pages,
   };
   figma.ui.postMessage({ type: "storage", storage: storage });
 }
@@ -33,6 +35,9 @@ figma.skipInvisibleInstanceChildren = true;
 
 // Initialize default Are.na API URL
 const ARENA_API_BASE_URL = "https://api.are.na/v2";
+
+// Get playing area page
+const playPage = figma.root.findChild(node => node.name === 'Play') ?? figma.currentPage;
 
 // Listen to messages posted from Figma UI
 figma.ui.onmessage = async (msg) => {
@@ -45,6 +50,9 @@ figma.ui.onmessage = async (msg) => {
       break;
     case "updateHeader":
       updateHeader(msg.times);
+      break;
+    case "updateTemplate":
+      updateTemplate(msg.index);
       break;
     case "cancel":
       figma.closePlugin();
@@ -75,7 +83,9 @@ async function playGame(msg: any) {
   // Get URL to random source image from specified Are.na channel
   var source_img: string;
   try {
-    const page_number = await getPageNumber(ARENA_API_BASE_URL, channelSlug);
+    const storedURL = await figma.clientStorage.getAsync("arena_url");
+    const pages = await figma.clientStorage.getAsync("pages");
+    const page_number = storedURL === msg.url && pages !== undefined ? Math.floor(Math.random() * pages) : await getPageNumber(ARENA_API_BASE_URL, channelSlug);
     const response = await fetch(
       `${ARENA_API_BASE_URL}/channels/${channelSlug}/contents?page=${page_number}`
     );
@@ -85,9 +95,12 @@ async function playGame(msg: any) {
     );
     console.log(images);
 
-    // If are.na link is valid but channel is empty, exit
+    // If Are.na link is valid but channel is empty, exit
     if (images.length === 0) {
-      figma.ui.postMessage({ type: "error", message: "Are.na channel has no images / links." });
+      figma.ui.postMessage({
+        type: "error",
+        message: "Are.na channel has no images / links."
+      });
       loading.cancel();
       return;
     }
@@ -95,7 +108,10 @@ async function playGame(msg: any) {
     const randomIndex = Math.floor(Math.random() * images.length);
     source_img = images[randomIndex].image.large.url;
   } catch (err) {
-    figma.ui.postMessage({ type: "error", message: "Are.na channel does not exist." });
+    figma.ui.postMessage({
+      type: "error",
+      message: "Are.na channel does not exist."
+    });
     loading.cancel();
     return;
   }
@@ -103,7 +119,7 @@ async function playGame(msg: any) {
   await figma.clientStorage.setAsync("arena_url", msg.url);
   figma.ui.hide();
 
-  const tree = figma.currentPage;
+  const tree = playPage;
   const src_imgs = tree.findAll((node) => { return node.name === "source-img"; });
   const canvases = tree.findAll((node) => { return node.name === "canvas"; });
   const memotimers = tree.findAll((node) => { return node.name === "memotimer"; });
@@ -119,7 +135,7 @@ async function playGame(msg: any) {
       const source_img = Node.createSourceImage(image, i);
       const canvas = Node.createCanvas(i);
       const countdowntimer = Node.createTimer("countdowntimer", "Starting in: ",
-                                              "0:05", "right", i);
+        "0:05", "right", i);
       Timer.start(countdowntimer, "Starting in: ");
       src_imgs.push(source_img);
       canvases.push(canvas);
@@ -135,7 +151,7 @@ async function playGame(msg: any) {
 
       for (let i = 1; i < num_players + 1; i++) {
         const memotimer = Node.createTimer("countdowntimer", "Time left: ",
-                                            memotime_text, "right", i);
+          memotime_text, "right", i);
         Timer.start(memotimer, "Time left: ");
         memotimers.push(memotimer);
       }
@@ -148,7 +164,7 @@ async function playGame(msg: any) {
 
       for (let i = 1; i < num_players + 1; i++) {
         const playtimer = Node.createTimer("playtimer", "Time left: ",
-                                            playtime_text, "left", i);
+          playtime_text, "left", i);
         Timer.start(playtimer, "Time left: ");
         playtimers.push(playtimer);
       }
@@ -161,10 +177,15 @@ async function playGame(msg: any) {
 
       figma.ui.postMessage({ type: "error", message: "" });
       figma.ui.show();
+
+      archive();
     }, playtime + memotime + 5000);
 
   }).catch((error: any) => {
-    figma.ui.postMessage({ type: "error", message: "Something went wrong." });
+    figma.ui.postMessage({
+      type: "error",
+      message: "Something went wrong."
+    });
     console.log(error);
   });
 }
@@ -177,40 +198,112 @@ async function getPageNumber(ARENA_API_BASE_URL: string, channelSlug: string) {
     const pages = Math.ceil(json.length / 20);
     const page_number = Math.floor(Math.random() * pages);
 
+    // Save page count to clientStorage
+    await figma.clientStorage.setAsync("pages", pages);
+
     return page_number;
   } catch (err) {
-    figma.ui.postMessage({ type: "error", message: "Are.na channel does not exist." });
+    figma.ui.postMessage({
+      type: "error",
+      message: "Are.na channel does not exist."
+    });
     return;
   }
 }
 
 // Clear the board after every game (user directed action)
 function clearBoard() {
-  const tree = figma.currentPage;
-
-  const nodes = tree.findAll((node) => {
+  const nodes = playPage.findAll((node) => {
     return (
-      node.name === "source-img" ||
-      node.name === "canvas" ||
+      /source-img-\d+$/.test(node.name) ||
+      /canvas-\d+$/.test(node.name) ||
       node.name === "playtimer" ||
       node.name === "memotimer" ||
       node.name === "countdowntimer"
     );
-  });
+  }) ?? [];
 
   for (const node of nodes) {
     node.remove();
   }
 
-  figma.notify("Board cleared ✨", { timeout: 1500, button: { text: "✕", action: () => { return true } } });
+  figma.notify("Board cleared ✨", {
+    timeout: 1500,
+    button: { text: "✕", action: () => { return true } }
+  });
 }
 
-async function updateHeader(times: {memotime: string, playtime: string}) {
+// Update header information based on memorization & play time
+async function updateHeader(times: { memotime: string, playtime: string }) {
   try {
     await figma.loadFontAsync({ family: "IBM Plex Mono", style: "Bold" });
-    const header = figma.currentPage.findChild(n => n.type === "TEXT" && n.name === "Header");
+    const header = playPage.findChild(n => n.type === "TEXT" && n.name === "Header");
     (header as TextNode).characters = `You will have ${times.memotime} to memorize\nthe design and ${times.playtime} to replicate it.`;
   } catch (err) {
     console.log(err)
+  }
+}
+
+// Update templates visbilities based on number of players
+async function updateTemplate(index: number) {
+  try {
+    for (var i = 1; i <= index; i++) {
+      const templateName = "Player " + i.toString();
+      const template = playPage.findOne(n => n.name === templateName);
+      template !== null ? template.visible = true : console.log("No template found.");
+    }
+    for (var i = index + 1; i <= 5; i++) {
+      const templateName = "Player " + i.toString();
+      const template = playPage.findOne(n => n.name === templateName);
+      template !== null ? template.visible = false : console.log("No template found.");
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Make copy of play area once round ends and move to Archive page
+function archive() {
+  try {
+    const nodes = playPage.findChildren((node) => {
+      return (
+        (/source-img-\d+$/.test(node.name) ||
+          /canvas-\d+$/.test(node.name) ||
+          /Player \d+$/.test(node.name) ||
+          node.name === "Header") &&
+        node.visible === true
+      );
+    });
+
+    // Get Archive page to clone work to 
+    const archive = figma.root.findChild(node => node.name === 'Archive');
+    const clonedNodes: SceneNode[] = [];
+    nodes?.forEach(node => clonedNodes.push(node.clone()));
+
+    // Group nodes to archive
+    const groupedNodes = figma.group(clonedNodes, playPage);
+
+    let archiveNodesSorted: SceneNode[] = [];
+    archive?.children.forEach(node => archiveNodesSorted.push(node.clone()));
+    archiveNodesSorted.sort((a, b) => {
+      return a.x < b.x ? -1 : 1
+    });
+
+    const lastNode: SceneNode = archiveNodesSorted[archiveNodesSorted.length - 1];
+
+    const x: number = lastNode !== undefined ? lastNode.x : 0;
+    const width: number = lastNode !== undefined ? lastNode.width + 1000 : 0;
+
+    groupedNodes.name = "Archive";
+    groupedNodes.x = x + width;
+    groupedNodes.y = 0;
+
+    console.log("Cloning and moving to archive page...");
+    archive?.appendChild(groupedNodes);
+    
+    const archives = playPage.findAll((node) => { return node.name === "Archive"; })
+    archives.forEach((node) => node.remove());
+  } catch (err) {
+    console.log(err);
   }
 }

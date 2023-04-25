@@ -7,8 +7,8 @@
     - [x] Clear board notification using figma.notify()
     - [x] Make window size constant
     - [x] Hide / show templates based on player count
-    - [] Figma community file
-    - [] Spruce up Play & Archive pages
+    - [ ] Figma community file
+    - [ ] Spruce up Play & Archive pages
 
 - Functionality
     - [x] Error handling for empty & private channels
@@ -21,10 +21,10 @@
         - [x] Better coordinate storage syncing with UI
     - [x] Attach node creation to template layers
     - [x] Store page count in clientStorage to reduce fetch requests
-    - [] Clear -> Reset Board (reset play + archive page)
+    - [ ] Clear -> Reset Board (reset play + archive page)
 
 - Bugs
-    - [] Fix grouping issue when plugin is open in another page other than Play
+    - [ ] Fix grouping issue when plugin is open in another page other than Play
 
 - Features
     - [x] Ability to specify custom Are.na channel
@@ -36,16 +36,16 @@
 - Documentation / Code
     - [x] Webpack bundling
     - [x] Tags in GitHub repo
-    - [] Remove console.logs
-    - [] Reduce / remove magic numbers
-    - [] Clean up CSS
-        - [] Minify CSS
-        - [] Consolidate CSS in css/styles.css
-    - [] Modularize code with webpack
-    - [] Standardize variable names
+    - [ ] Remove console.logs
+    - [ ] Reduce / remove magic numbers
+    - [ ] Clean up CSS
+        - [ ] Minify CSS
+        - [ ] Consolidate CSS in css/styles.css
+    - [ ] Modularize code with webpack
+    - [ ] Standardize variable names
 
 - To check / think about:
-    - [] Custom fonts in Figma (IBM Plex Mono, etc.)
-    - [] Pages missing templates etc; default behaviour when users press play
-    - [] Organization of rounds in Archive page
-    - [] Finalize timings for memorization and play time
+    - [ ] Custom fonts in Figma (IBM Plex Mono, etc.)
+    - [ ] Pages missing templates etc; default behaviour when users press play
+    - [ ] Organization of rounds in Archive page
+    - [ ] Finalize timings for memorization and play time

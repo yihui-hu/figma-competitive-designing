@@ -569,6 +569,8 @@
     const times = {
       memotime: memotime.options[memotime.selectedIndex].text,
       playtime: playtime.options[playtime.selectedIndex].text,
+      memotime_index: memotime.selectedIndex,
+      playtime_index: playtime.selectedIndex,
     }
     parent.postMessage({ pluginMessage: { type: "updateHeader", times: times } }, '*')
   }

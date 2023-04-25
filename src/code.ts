@@ -46,7 +46,7 @@ figma.ui.onmessage = async (msg) => {
       playGame(msg);
       break;
     case "clear":
-      clearBoard();
+      clearBoard(true);
       break;
     case "updateHeader":
       updateHeader(msg.times);
@@ -64,6 +64,9 @@ figma.ui.onmessage = async (msg) => {
 
 // Set up play area and initiate game
 async function playGame(msg: any) {
+  // Reset board
+  clearBoard(false);
+
   // Get user params
   const memotime = msg.memotime * 1000;
   const memotime_text = msg.memotime_text;
@@ -72,11 +75,6 @@ async function playGame(msg: any) {
   const num_players = parseInt(msg.num_players);
   const channelURL = msg.url.split("/");
   const channelSlug = channelURL[channelURL.length - 1];
-
-  // Save settings (i.e. set storage) according to user params
-  await figma.clientStorage.setAsync("players", msg.num_players_index);
-  await figma.clientStorage.setAsync("memo_time", msg.memotime_index);
-  await figma.clientStorage.setAsync("playtime", msg.playtime_index);
 
   const loading = figma.notify("Loading...", { timeout: Infinity });
 
@@ -212,7 +210,7 @@ async function getPageNumber(ARENA_API_BASE_URL: string, channelSlug: string) {
 }
 
 // Clear the board after every game (user directed action)
-function clearBoard() {
+function clearBoard(userCleared: boolean) {
   const nodes = playPage.findAll((node) => {
     return (
       /source-img-\d+$/.test(node.name) ||
@@ -227,18 +225,22 @@ function clearBoard() {
     node.remove();
   }
 
-  figma.notify("Board cleared ✨", {
+  if (userCleared) figma.notify("Board cleared ✨", {
     timeout: 1500,
     button: { text: "✕", action: () => { return true } }
   });
 }
 
 // Update header information based on memorization & play time
-async function updateHeader(times: { memotime: string, playtime: string }) {
+async function updateHeader(times: { memotime: string, playtime: string, memotime_index: number, playtime_index: number }) {
   try {
     await figma.loadFontAsync({ family: "IBM Plex Mono", style: "Bold" });
     const header = playPage.findChild(n => n.type === "TEXT" && n.name === "Header");
     (header as TextNode).characters = `You will have ${times.memotime} to memorize\nthe design and ${times.playtime} to replicate it.`;
+
+    // Save settings for timers (i.e. set storage)
+    await figma.clientStorage.setAsync("memo_time", times.memotime_index);
+    await figma.clientStorage.setAsync("playtime", times.playtime_index);
   } catch (err) {
     console.log(err)
   }
@@ -247,6 +249,7 @@ async function updateHeader(times: { memotime: string, playtime: string }) {
 // Update templates visbilities based on number of players
 async function updateTemplate(index: number) {
   try {
+    await figma.clientStorage.setAsync("players", index - 1);
     for (var i = 1; i <= index; i++) {
       const templateName = "Player " + i.toString();
       const template = playPage.findOne(n => n.name === templateName);
@@ -280,27 +283,12 @@ function archive() {
     const clonedNodes: SceneNode[] = [];
     nodes?.forEach(node => clonedNodes.push(node.clone()));
 
-    // Group nodes to archive
+    // Group nodes to archive and append to Archived Rounds auto-layout frame
     const groupedNodes = figma.group(clonedNodes, playPage);
-
-    let archiveNodesSorted: SceneNode[] = [];
-    archive?.children.forEach(node => archiveNodesSorted.push(node.clone()));
-    archiveNodesSorted.sort((a, b) => {
-      return a.x < b.x ? -1 : 1
-    });
-
-    const lastNode: SceneNode = archiveNodesSorted[archiveNodesSorted.length - 1];
-
-    const x: number = lastNode !== undefined ? lastNode.x : 0;
-    const width: number = lastNode !== undefined ? lastNode.width + 1000 : 0;
-
     groupedNodes.name = "Archive";
-    groupedNodes.x = x + width;
-    groupedNodes.y = 0;
+    const archivedRounds = archive?.findChild(node => node.name === "Archived Rounds");
+    (archivedRounds as FrameNode)?.insertChild(0, groupedNodes);
 
-    console.log("Cloning and moving to archive page...");
-    archive?.appendChild(groupedNodes);
-    
     const archives = playPage.findAll((node) => { return node.name === "Archive"; })
     archives.forEach((node) => node.remove());
   } catch (err) {

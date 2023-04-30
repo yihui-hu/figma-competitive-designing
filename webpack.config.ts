@@ -1,7 +1,11 @@
 const path = require('path');
 const webpack = require('webpack');
 
-module.exports = (env: any, argv: any) => ({
+interface Arguments {
+  mode: string
+}
+
+module.exports = (env: any, argv: Arguments) => ({
 mode: argv.mode === 'production' ? 'production' : 'development',
 
 // This is necessary because Figma's 'eval' works differently than normal eval

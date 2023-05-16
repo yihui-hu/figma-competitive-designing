@@ -6,6 +6,7 @@
       text-decoration: none;
       transition: 0.1s ease;
       border-bottom: 1px solid transparent;
+      cursor: pointer;
     }
 
     a:hover {
@@ -19,7 +20,7 @@
       opacity: 20%;
     }
 
-    #broom {
+    #resetIcon {
       transition: 0.2s ease;
     }
 
@@ -371,6 +372,84 @@
       user-select: none;
       padding: 0;
     }
+
+    .switch {
+      align-items: center;
+      cursor: default;
+      display: flex;
+      height: var(--size-medium);
+      position: relative;
+      margin-left: -8px;
+      margin-top: -8px;
+    }
+
+    .switch__toggle {
+      opacity: 0;
+    }
+
+    .switch__toggle:checked+.switch__label:before {
+      color: var(--black8);
+      background-color: var(--black8-opaque);
+    }
+
+    .switch__toggle:checked+.switch__label:after {
+      transform: translateX(12px);
+    }
+
+    .switch__toggle:checked:disabled+.switch__label:before {
+      border: 1px solid var(--black);
+      background-color: var(--black);
+    }
+
+    .switch__toggle:disabled+.switch__label {
+      color: var(--black);
+      opacity: 0.3;
+    }
+
+    .switch__label {
+      align-items: center;
+      color: var(--black8);
+      display: flex;
+      font-family: var(--font-stack);
+      font-size: var(--font-size-xsmall);
+      font-weight: var(--font-weight-normal);
+      height: 100%;
+      letter-spacing: var(--font-letter-spacing-pos-xsmall);
+      line-height: var(--font-line-height);
+      margin-left: 20px;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    .switch__label:before {
+      background-color: var(--white);
+      border: 1px solid var(--black8-opaque);
+      border-radius: 6px;
+      content: '';
+      display: block;
+      height: 10px;
+      left: 8px;
+      position: absolute;
+      top: 10px;
+      transition: background-color 0 0.2s;
+      width: 22px;
+    }
+
+    .switch__label:after {
+      background-color: var(--white);
+      border: 1px solid var(--black8-opaque);
+      border-radius: 50%;
+      content: '';
+      display: block;
+      height: 10px;
+      left: 8px;
+      position: absolute;
+      top: 10px;
+      transition: transform 0.2s;
+      width: 10px;
+    }
   </style>
 </head>
 
@@ -440,29 +519,28 @@
           Cancel
         </button>
       </div>
-      <button id="clear" class="button button--tertiary" style="display: inline;">
-        <svg id="broom" style="margin-bottom: -2px; margin-right: 2px;" width="11" height="14" viewBox="0 0 11 14"
+      <button id="reset" class="button button--tertiary" style="display: inline;">
+        <svg id="resetIcon" style="margin-bottom: -2px; margin-right: 2px;" width="11" height="13" viewBox="0 0 11 13"
           fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
-            d="M6.82896 0.855034C7.46228 0.907901 7.94028 1.12382 8.26295 1.5028C8.58562 1.88177 8.71982 2.38151 8.66553 3.002C8.64797 3.23175 8.59497 3.4889 8.50654 3.77345C8.4204 4.06074 8.321 4.3545 8.20831 4.65472C8.09838 4.95264 7.99618 5.23472 7.90172 5.50095C7.80956 5.76992 7.74731 6.00212 7.71497 6.19754L9.33084 6.33509C9.62618 6.35839 9.8498 6.46056 10.0017 6.6416C10.1587 6.82307 10.2246 7.05759 10.1994 7.34513L10.1099 8.32472C10.082 8.61457 9.97889 8.8343 9.80059 8.9839C9.6223 9.13351 9.38318 9.19392 9.08325 9.16514L3.16933 8.65155C2.8717 8.62551 2.64693 8.52197 2.49502 8.34094C2.34267 8.16494 2.27792 7.9318 2.30077 7.64151L2.39029 6.66192C2.41545 6.37438 2.51854 6.15465 2.69958 6.00274C2.88062 5.85083 3.11996 5.7879 3.41759 5.81394L5.03281 5.95906C5.03214 5.7633 5.00979 5.52497 4.96574 5.24408C4.91894 4.96549 4.86865 4.66881 4.81486 4.35402C4.75833 4.04154 4.71259 3.73635 4.67765 3.43847C4.63997 3.14288 4.63106 2.88159 4.65092 2.65458C4.70521 2.03409 4.92414 1.56525 5.30772 1.24806C5.6913 0.930874 6.19838 0.799866 6.82896 0.855034ZM3.23637 6.92657L3.19098 7.53259C3.18215 7.63348 3.20075 7.71136 3.24679 7.76622C3.29238 7.82612 3.36447 7.85912 3.46306 7.8652L8.92987 8.3473C9.12935 8.36221 9.23814 8.26625 9.25624 8.05942L9.31199 7.46574C9.33831 7.25201 9.24532 7.13839 9.033 7.1249L7.22038 6.97013C7.07913 6.95777 6.97349 6.90151 6.90346 6.80134C6.833 6.70622 6.80345 6.57909 6.81483 6.41997C6.82763 6.27367 6.88126 6.06741 6.97572 5.80118C7.07018 5.53495 7.18011 5.23703 7.30553 4.90742C7.43095 4.57782 7.54557 4.24091 7.64939 3.89671C7.75551 3.55525 7.82045 3.23433 7.84418 2.93395C7.8787 2.56843 7.79907 2.27299 7.60529 2.04763C7.41656 1.8227 7.13439 1.69254 6.75878 1.65713C6.38548 1.62447 6.08384 1.70229 5.85387 1.89058C5.6262 2.08162 5.49763 2.36012 5.46815 2.72608C5.44211 3.02371 5.45033 3.35103 5.49281 3.70803C5.53528 4.06503 5.58965 4.41672 5.65593 4.7631C5.72221 5.10948 5.78012 5.42081 5.82965 5.6971C5.87875 5.97843 5.89689 6.19224 5.88409 6.33854C5.86537 6.49448 5.81283 6.61569 5.72647 6.70218C5.64011 6.78866 5.52768 6.82458 5.38917 6.80992L3.56965 6.64692C3.36282 6.62882 3.25173 6.72204 3.23637 6.92657ZM7.17592 2.37987C7.2933 2.51976 7.34268 2.68166 7.32405 2.86557C7.30816 3.04718 7.23027 3.19667 7.09038 3.31406C6.95048 3.43144 6.78973 3.48219 6.60813 3.4663C6.42652 3.45041 6.27702 3.37252 6.15964 3.23263C6.04225 3.09274 5.99036 2.93061 6.00394 2.74626C6.01983 2.56466 6.09772 2.41516 6.23762 2.29778C6.37751 2.18039 6.53826 2.12964 6.71987 2.14553C6.90652 2.16186 7.05854 2.23997 7.17592 2.37987ZM9.45261 8.77809L9.13815 12.3724C9.10151 12.7911 8.95197 13.1059 8.68953 13.3168C8.42664 13.5327 8.07943 13.623 7.64789 13.5878L1.70371 13.0716C1.50466 13.0516 1.33114 12.9869 1.18315 12.8773C1.03471 12.7729 0.921925 12.6385 0.844803 12.4741C0.769983 12.3125 0.74211 12.1373 0.761183 11.9483C0.780256 11.7594 0.857342 11.5755 0.992442 11.3967C1.2599 11.0414 1.48582 10.7396 1.67019 10.4914C1.85413 10.2483 2.00768 10.033 2.13083 9.84549C2.25354 9.66306 2.35793 9.48665 2.444 9.31627C2.52733 9.14819 2.60167 8.96661 2.66703 8.77154C2.73239 8.57647 2.7999 8.34219 2.86958 8.06871L3.73978 8.14484C3.65579 8.52382 3.56267 8.84736 3.46043 9.11545C3.35774 9.38859 3.23483 9.64598 3.09169 9.88762C2.95085 10.132 2.78028 10.3967 2.57998 10.6816C2.37694 10.9688 2.13307 11.316 1.84836 11.7232C1.79316 11.8022 1.76521 11.8748 1.76451 11.9408C1.76338 12.0119 1.78627 12.0698 1.83319 12.1145C1.87736 12.1616 1.94233 12.1889 2.02808 12.1964L7.69163 12.6957C7.86819 12.7112 8.00996 12.674 8.11694 12.5842C8.22392 12.4945 8.28447 12.3689 8.29859 12.2074L8.60511 8.70394L9.45261 8.77809ZM6.56185 10.0959C6.66275 10.1047 6.75569 10.2044 6.8407 10.3948C6.928 10.588 7.00125 10.8257 7.06043 11.1079C7.11917 11.3951 7.1573 11.6857 7.1748 11.9795C7.18956 12.2756 7.17484 12.531 7.13063 12.7458L5.47002 12.5967C5.80261 12.2521 6.03356 11.8784 6.16285 11.4754C6.29445 11.0752 6.37879 10.6632 6.41586 10.2394C6.42238 10.1358 6.47105 10.088 6.56185 10.0959Z"
-            fill="black" fill-opacity="0.8" />
+            d="M0.921204 7.44507C0.921204 6.77547 1.04474 6.14884 1.29181 5.56519C1.53888 4.98153 1.88084 4.46948 2.31769 4.02905C2.75812 3.58862 3.27016 3.24487 3.85382 2.9978C4.43748 2.75073 5.06232 2.6272 5.72833 2.6272C5.85008 2.6272 5.96824 2.63257 6.08282 2.64331C6.20099 2.65405 6.3102 2.66838 6.41046 2.68628L5.21271 1.50464C5.16258 1.45093 5.12319 1.39185 5.09454 1.32739C5.0659 1.25936 5.05157 1.18595 5.05157 1.10718C5.05157 0.942464 5.10708 0.802816 5.21808 0.688232C5.32908 0.573649 5.46694 0.516357 5.63165 0.516357C5.79637 0.516357 5.93243 0.573649 6.03986 0.688232L8.242 2.92261C8.36375 3.04793 8.42462 3.19295 8.42462 3.35767C8.42462 3.44002 8.40851 3.5188 8.37628 3.59399C8.34764 3.66561 8.30288 3.73185 8.242 3.79272L6.03986 6.01636C5.93601 6.12378 5.79995 6.17749 5.63165 6.17749C5.47052 6.17749 5.33266 6.12199 5.21808 6.01099C5.10708 5.8964 5.05157 5.75854 5.05157 5.59741C5.05157 5.51506 5.0659 5.44165 5.09454 5.3772C5.12319 5.31274 5.16437 5.25366 5.21808 5.19995L6.57159 3.85718C6.44985 3.83211 6.31736 3.81421 6.17413 3.80347C6.0309 3.78914 5.8823 3.78198 5.72833 3.78198C5.22345 3.78198 4.75258 3.87687 4.31573 4.06665C3.87889 4.25285 3.49575 4.51424 3.16632 4.85083C2.83689 5.18384 2.57908 5.57235 2.39288 6.01636C2.20669 6.45679 2.11359 6.93302 2.11359 7.44507C2.11359 7.94995 2.20669 8.4244 2.39288 8.86841C2.58266 9.30884 2.84406 9.69556 3.17706 10.0286C3.51007 10.3616 3.89679 10.623 4.33722 10.8127C4.77765 10.9989 5.2521 11.092 5.76056 11.092C6.26544 11.092 6.73631 10.9989 7.17316 10.8127C7.61359 10.623 8.00031 10.3616 8.33331 10.0286C8.6699 9.69556 8.93129 9.30884 9.11749 8.86841C9.30727 8.4244 9.40216 7.94995 9.40216 7.44507C9.40216 7.26603 9.45587 7.11922 9.56329 7.00464C9.67072 6.89006 9.81215 6.83276 9.98761 6.83276C10.1631 6.83276 10.3081 6.89006 10.4227 7.00464C10.5373 7.11922 10.5945 7.26603 10.5945 7.44507C10.5945 8.11825 10.4692 8.74845 10.2186 9.33569C9.9715 9.91935 9.62596 10.4332 9.18195 10.8772C8.73794 11.3176 8.22231 11.6632 7.63507 11.9138C7.05141 12.1645 6.42657 12.2898 5.76056 12.2898C5.09096 12.2898 4.46254 12.1645 3.87531 11.9138C3.29165 11.6632 2.77781 11.3176 2.3338 10.8772C1.89337 10.4332 1.54783 9.91935 1.29718 9.33569C1.04653 8.74845 0.921204 8.11825 0.921204 7.44507Z"
+            fill="black" />
         </svg>
-        Clear board
+        Reset board
       </button>
     </div>
 
     <hr style="width: 100vw; margin-inline: -18px; border: 0.5px solid #e5e5e5; margin-top: 18px; margin-bottom: 18px;">
 
-    <svg onclick="infoButtonPressed()"
-      style="cursor: pointer; position: absolute; bottom: -7.5px; right: -6px; color: black;" width="15" height="15"
-      viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M7.4002 14.5997C11.377 14.5997 14.6002 11.3765 14.6002 7.39971C14.6002 3.42291 11.377 0.199707 7.4002 0.199707C3.4234 0.199707 0.200195 3.42291 0.200195 7.39971C0.200195 11.3765 3.4234 14.5997 7.4002 14.5997ZM7.4002 13.3997C3.865 13.3997 1.4002 10.9349 1.4002 7.39971C1.4002 3.86451 3.865 1.39971 7.4002 1.39971C10.9354 1.39971 13.4002 3.86451 13.4002 7.39971C13.4002 10.9349 10.9354 13.3997 7.4002 13.3997ZM6.8002 6.59931H8.0002V9.19971V11.3993H6.8002V9.19971V6.59931ZM6.601 4.19931C6.601 3.75771 6.9586 3.40011 7.4014 3.40011C7.843 3.40011 8.2006 3.75771 8.2006 4.19931C8.2006 4.64211 7.843 4.99971 7.4014 4.99971C6.9586 4.99971 6.601 4.64211 6.601 4.19931Z"
-        fill="black" fill-opacity="0.8" />
-    </svg>
+    <h4 onclick="infoButtonPressed()"
+      style="cursor: pointer; position: absolute; bottom: -32px; right: -6px; color: black;" width="15">👀</h4>
   </footer>
 
   <div id="modal" class="modal">
+    <div class="switch">
+      <input class="switch__toggle" type="checkbox" id="resetToggle" checked>
+      <label class="switch__label" for="resetToggle">Preserve layout on reset</label>
+    </div>
     <h6 style="display: flex;">
       <a href="">How to play</a>
     </h6>
@@ -470,6 +548,7 @@
     <h6 style="display: flex;">
       <a href="https://github.com/yihui-hu/figma-competitive-design" target="_blank">GitHub</a>
     </h6>
+    <div style="height: 6px"></div>
   </div>
 </body>
 
@@ -479,6 +558,7 @@
   onmessage = (event) => {
     const type = event.data.pluginMessage.type;
     const message = event.data.pluginMessage.message;
+
     if (type == "error") {
       document.getElementById("message").innerHTML =
         `<div style="display: flex; margin-top: -11px;">
@@ -494,6 +574,7 @@
       const memo_time = storage.memo_time;
       const players = storage.players;
       const playtime = storage.playtime;
+      const preserve_layout = storage.preserve_layout;
 
       if (arena_url && arena_url != "https://www.are.na/christina/competitive-design-website-repo") {
         document.getElementById("url").value = arena_url;
@@ -501,6 +582,7 @@
       if (memo_time != undefined) document.getElementById("memotime").selectedIndex = memo_time;
       if (players != undefined) document.getElementById("players").selectedIndex = players;
       if (playtime != undefined) document.getElementById("playtime").selectedIndex = playtime;
+      if (preserve_layout != undefined) document.getElementById("resetToggle").checked = preserve_layout;
 
       // Get initial number of players & (de)saturate accordingly
       var num_players = document.getElementById("players").selectedIndex + 1
@@ -522,11 +604,14 @@
 <!-- Auxilliary UI scripts -->
 <script>
   // Animate broom when hovering over clear board button
-  document.getElementById("clear").addEventListener("mouseover", (event) => {
-    document.getElementById("broom").style.transform = "rotate(10deg)";
+  document.getElementById("reset").addEventListener("mouseover", (event) => {
+    document.getElementById("resetIcon").style.transform = "rotate(30deg)";
   })
-  document.getElementById("clear").addEventListener("mouseleave", (event) => {
-    document.getElementById("broom").style.transform = "rotate(0deg)";
+  document.getElementById("reset").addEventListener("mouseleave", (event) => {
+    document.getElementById("resetIcon").style.transform = "rotate(0deg)";
+  })
+  document.getElementById("reset").addEventListener("click", (event) => {
+    document.getElementById("resetIcon").style.transform = "rotate(360deg)";
   })
 
   // Display modal when info button is pressed
@@ -539,11 +624,11 @@
     }
   }
 
+  // Update template & character highlights when number of players changes
   document.getElementById("players").addEventListener("change", (event) => {
     updatePlayerImgs(event.target.selectedIndex + 1);
   });
 
-  // Update template & character highlights when number of players changes
   function updatePlayerImgs(index) {
     document.getElementById("players").selectedIndex = index - 1;
 
@@ -584,6 +669,23 @@
 
 <!-- Scripts to handle behaviour of plugin given user action -->
 <script>
+  const memotime_texts = {
+    "1": "0:01",
+    "10": "0:10",
+    "30": "0:30",
+    "45": "0:45",
+    "60": "1:00"
+  }
+
+  const playtime_texts = {
+    "1": "0:01",
+    "10": "0:10",
+    "60": "1:00",
+    "180": "3:00",
+    "300": "5:00",
+    "600": "10:00",
+  }
+
   document.getElementById("play").onclick = () => {
     // Clear previous error message
     document.getElementById("message").style.display = "none";
@@ -612,50 +714,8 @@
     var playtime = pt_options.options[pt_options.selectedIndex].value;
     var playtime_index = pt_options.selectedIndex;
 
-    var memotime_text = "0:30";
-    switch (memotime) {
-      case "1":
-        memotime_text = "0:01";
-        break;
-      case "10":
-        memotime_text = "0:10";
-        break;
-      case "30":
-        memotime_text = "0:30";
-        break;
-      case "45":
-        memotime_text = "0:45";
-        break;
-      case "60":
-        memotime_text = "1:00";
-        break;
-      default:
-        memotime_text = "0:30";
-    }
-
-    var playtime_text = "3:00";
-    switch (playtime) {
-      case "1":
-        playtime_text = "0:01";
-        break;
-      case "10":
-        playtime_text = "0:10";
-        break;
-      case "60":
-        playtime_text = "1:00";
-        break;
-      case "180":
-        playtime_text = "3:00";
-        break;
-      case "300":
-        playtime_text = "5:00";
-        break;
-      case "600":
-        playtime_text = "10:00";
-        break;
-      default:
-        playtime_text = "3:00";
-    }
+    var memotime_text = memotime_texts[memotime] ?? "0:30";
+    var playtime_text = playtime_texts[playtime] ?? "3:00";
 
     console.log("Time before source image disappears: " + memotime_text);
     console.log("Number of players: " + num_players);
@@ -677,11 +737,17 @@
     }, '*')
   }
 
+  // Update setting / behaviour of reset board
+  document.getElementById("resetToggle").addEventListener("change", (event) => {
+    const checked = document.getElementById("resetToggle").checked;
+    parent.postMessage({ pluginMessage: { type: "updateSettings", checked: checked } }, '*')
+  })
+
   document.getElementById('cancel').onclick = () => {
     parent.postMessage({ pluginMessage: { type: "cancel" } }, '*')
   }
 
-  document.getElementById('clear').onclick = () => {
-    parent.postMessage({ pluginMessage: { type: "clear" } }, '*')
+  document.getElementById('reset').onclick = () => {
+    parent.postMessage({ pluginMessage: { type: "reset" } }, '*')
   }
 </script>

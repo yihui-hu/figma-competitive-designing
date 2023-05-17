@@ -10,7 +10,8 @@
 - [x] Hide / show templates based on player count
 - [x] Message for successfully resetting board
 - [x] Link to Are.na competitive design repo in info modal
-- [ ] Update modal design
+- [x] Update modal design
+- [x] Design favicon
 - [ ] Figma community file
 - [ ] Design Play & Archive pages default state
 
@@ -28,6 +29,7 @@
 - [x] Store page count in clientStorage to reduce fetch requests
 - [x] Reset board (with option to preserve layout)
 - [x] Create Archived Rounds auto-layout if not present while archiving
+- [ ] Cache image links / page number / index (better for no repeats)
 
 ## Bugs
 
@@ -59,6 +61,4 @@
 ##  To check / think about:
 
 - [ ] Test custom fonts in Figma (IBM Plex Mono, etc.)
-- [ ] !! Layout of rounds in Archive page (vertical / horizontal)
-- [ ] Finalize (default) timings for memorization and play time
-- [ ] !! Message / emoji for something went wrong
+- [x] Finalize (default) timings for memorization and play time

@@ -8,10 +8,11 @@
 - [x] Clear board notification using figma.notify()
 - [x] Make window size constant
 - [x] Hide / show templates based on player count
+- [x] Message for successfully resetting board
+- [x] Link to Are.na competitive design repo in info modal
+- [ ] Update modal design
 - [ ] Figma community file
 - [ ] Design Play & Archive pages default state
-- [ ] Link to Are.na competitive design repo in info modal
-- [ ] Message for successfully resetting board
 
 ## Functionality
 
@@ -25,13 +26,13 @@
     - [x] Better coordinate storage syncing with UI
 - [x] Attach node creation to template layers
 - [x] Store page count in clientStorage to reduce fetch requests
-- [ ] If Archived Rounds auto-layout element is not present, create it when archiving
-- [ ] Reset board (with option to preserve layout)
+- [x] Reset board (with option to preserve layout)
+- [x] Create Archived Rounds auto-layout if not present while archiving
 
 ## Bugs
 
-- [ ] Fix grouping issue when plugin is open in another page other than Play
-- [ ] Handle behaviour when templates are missing
+- [x] Fix grouping issue when plugin is open in another page other than Play
+- [ ] Test + handle behaviour when templates are missing
 
 ## Features
 
@@ -53,12 +54,11 @@
     - [ ] Consolidate CSS in css/styles.css
 - [ ] Modularize code with webpack
 - [ ] Standardize variable names
-- [ ] Document what's stored in clientStorage
+- [ ] Document clientStorage
 
 ##  To check / think about:
 
-- [ ] Custom fonts in Figma (IBM Plex Mono, etc.)
-- [ ] !! Pages missing templates etc; default behaviour when users press play
-- [ ] Organization of rounds in Archive page
-- [ ] Finalize timings for memorization and play time
+- [ ] Test custom fonts in Figma (IBM Plex Mono, etc.)
+- [ ] !! Layout of rounds in Archive page (vertical / horizontal)
+- [ ] Finalize (default) timings for memorization and play time
 - [ ] !! Message / emoji for something went wrong

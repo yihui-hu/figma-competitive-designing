@@ -114,7 +114,9 @@ async function playGame(msg: any) {
   try {
     const storedURL = await figma.clientStorage.getAsync("arena_url");
     const pages = await figma.clientStorage.getAsync("pages");
-    const page_number = storedURL === msg.url && pages !== undefined ? Math.floor(Math.random() * pages) : await getPageNumber(ARENA_API_BASE_URL, channelSlug);
+    const page_number = (storedURL === msg.url && pages !== undefined) ?
+      Math.floor(Math.random() * pages) :
+      await getPageNumber(ARENA_API_BASE_URL, channelSlug);
     const response = await fetch(
       `${ARENA_API_BASE_URL}/channels/${channelSlug}/contents?page=${page_number}`
     );
@@ -307,31 +309,30 @@ async function updateSettings(preserveLayout: boolean) {
 // Make copy of play area once round ends and move to Archive page
 function archiveRound() {
   try {
-    const nodes = playPage.findChildren((node) => {
-      return (
-        (/source-img-\d+$/.test(node.name) ||
-          /canvas-\d+$/.test(node.name) ||
-          /Player \d+$/.test(node.name) ||
-          node.name === "Header") &&
-        node.visible === true
-      );
-    });
+    const nodes = playPage.children;
 
     // Get Archive page to clone work to 
     const archive = figma.root.findChild(node => node.name === 'Archive');
-    const clonedNodes: SceneNode[] = [];
-    nodes?.forEach(node => clonedNodes.push(node.clone()));
+    nodes?.forEach(node => archive?.appendChild(node.clone()));
 
-    // Group nodes to archive and append to Archived Rounds auto-layout frame
-    const groupedNodes = figma.group(clonedNodes, playPage);
+    let archivedRounds = archive?.findChild(node => node.name === "Archived Rounds");
+
+    // Create Archived Rounds auto-layout element if not already present
+    if (archivedRounds === null) {
+      const frame = Node.createArchivedRounds();
+      archive?.appendChild(frame);
+      archivedRounds = frame;
+    }
+
+    // Move round to Archive Page, group, then add to auto-layout element
+    const clonedNodes: SceneNode[] = archive?.findChildren(node => {
+      return node.name !== "Archived Rounds";
+    }) as SceneNode[];
+    const groupedNodes = figma.group(clonedNodes, archive ?? figma.currentPage);
     groupedNodes.name = "Archive";
-    const archivedRounds = archive?.findChild(node => node.name === "Archived Rounds");
-    (archivedRounds as FrameNode)?.insertChild(0, groupedNodes);
-
-    const archives = playPage.findAll((node) => { return node.name === "Archive"; })
-    archives.forEach((node) => node.remove());
+    (archivedRounds as FrameNode).insertChild(0, groupedNodes);
   } catch (err) {
-    console.log(err)
+    console.log(err);
     figma.notify("Error archiving round.", {
       timeout: 1500,
       button: { text: "✕", action: () => { return true } }

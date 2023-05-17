@@ -1,10 +1,7 @@
 /**
  * This file is responsible for creating the timers, source images and
- * blank canvases in Figma.
+ * blank canvases, templates, etc. in Figma.
  * 
- * `createTimer` returns a text node, 
- * `createSourceImage` returns a rectangle node with an image fill 
- * `createCanvas` returns a frame node.
  */
 
 // Reference coordinates as fallback

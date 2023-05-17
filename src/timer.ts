@@ -10,7 +10,7 @@
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 const secondsSet = [86400, 3600, 60, 1];
 
-export function start(node: TextNode, text: string) {
+function start(node: TextNode, text: string) {
   var timeString = node.characters;
   timeString = timeString.replace(text, "");
   var seconds = getRemainingSeconds(timeString);
@@ -19,7 +19,7 @@ export function start(node: TextNode, text: string) {
   startTimer(node, seconds, template, text);
 }
 
-export function getRemainingSeconds(timeString: string): number {
+function getRemainingSeconds(timeString: string): number {
   var seconds = 0;
   var components = timeString.split(":");
   secondsSet.reverse();
@@ -34,7 +34,7 @@ export function getRemainingSeconds(timeString: string): number {
   return seconds;
 }
 
-export function getTemplateFromString(timeString: string): string {
+function getTemplateFromString(timeString: string): string {
   var result = "";
   for (const c of timeString) {
     if (c == ":") {
@@ -46,7 +46,7 @@ export function getTemplateFromString(timeString: string): string {
   return result;
 }
 
-export async function startTimer(node: TextNode, seconds: number,
+async function startTimer(node: TextNode, seconds: number,
   template: string, text: string) {
   await figma.loadFontAsync(node.fontName as FontName);
 
@@ -67,7 +67,7 @@ export async function startTimer(node: TextNode, seconds: number,
   }
 }
 
-export function secondsToInterval(seconds: number): string {
+function secondsToInterval(seconds: number): string {
   var result = "";
   var secondsToGo = seconds;
   secondsSet.forEach((element) => {
@@ -86,7 +86,16 @@ export function secondsToInterval(seconds: number): string {
   return result;
 }
 
-export function fillUpTimeStringWithTemplate(timeString: string, template: string): string {
+function fillUpTimeStringWithTemplate(timeString: string, template: string): string {
   const trimmedTemplate = template.substring(0, template.length - timeString.length)
   return trimmedTemplate + timeString;
+}
+
+export {
+  start,
+  getRemainingSeconds,
+  getTemplateFromString,
+  startTimer,
+  secondsToInterval,
+  fillUpTimeStringWithTemplate
 }

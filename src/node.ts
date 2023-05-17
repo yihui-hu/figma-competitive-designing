@@ -14,7 +14,7 @@ function src_canvas_y(i: number) { return src_canvas_first_y + (i - 1) * src_can
 // Get playing area page
 const playPage = figma.root.findChild(node => node.name === 'Play') ?? figma.currentPage;
 
-export function createTimer(timerName: string, timerText: string, time: string,
+function createTimer(timerName: string, timerText: string, time: string,
   position: string, index: number) {
 
   const refNodeName: string = position === "right" ? "source-image-area-" + index.toString() : "canvas-area-" + index.toString();
@@ -40,7 +40,7 @@ export function createTimer(timerName: string, timerText: string, time: string,
   return timer;
 }
 
-export function createSourceImage(image: Image, index: number) {
+function createSourceImage(image: Image, index: number) {
   const refNodeName: string = "source-image-area-" + index.toString();
   const refNode = playPage.findAll(n => n.name === refNodeName);
 
@@ -62,7 +62,7 @@ export function createSourceImage(image: Image, index: number) {
   return source_img;
 }
 
-export function createCanvas(index: number) {
+function createCanvas(index: number) {
   const refNodeName: string = "canvas-area-" + index.toString()
   const refNode = playPage.findAll(n => n.name === refNodeName);
 
@@ -76,15 +76,12 @@ export function createCanvas(index: number) {
   return canvas;
 }
 
-export async function createHeader(memotime: string, playtime: string) {
+async function createHeader(memotime: string, playtime: string) {
   await figma.loadFontAsync({ family: "Inter", style: "Regular" });
   await figma.loadFontAsync({ family: "IBM Plex Mono", style: "SemiBold" });
 
   const header = figma.createText();
-  header.fontName = {
-    family: "IBM Plex Mono",
-    style: "SemiBold"
-  }
+  header.fontName = { family: "IBM Plex Mono", style: "SemiBold" }
   header.name = "Header";
   header.characters = `You will have ${memotime} to memorize\nthe design and ${playtime} to replicate it.`
   header.x = 0;
@@ -103,7 +100,7 @@ export async function createHeader(memotime: string, playtime: string) {
   playPage.appendChild(header);
 }
 
-export async function createTemplates(preserveLayout: boolean) {
+async function createTemplates(preserveLayout: boolean) {
   await figma.loadFontAsync({ family: "Inter", style: "Regular" });
   await figma.loadFontAsync({ family: "Inter", style: "Bold" });
   const players = await figma.clientStorage.getAsync("players") ?? 5;
@@ -121,28 +118,12 @@ export async function createTemplates(preserveLayout: boolean) {
       // Position templates accordingly
       if (preserveLayout) {
         const coordinates = await figma.clientStorage.getAsync(`player_${i}_coords`);
-        if (coordinates === undefined) {
-          if (i >= 4) {
-            groupedNodes.x = 3300;
-            groupedNodes.y = 965 + (1783 * (i - 4));
-          } else {
-            groupedNodes.x = -400;
-            groupedNodes.y = 965 + (1783 * (i - 1));
-          }
-        } else {
-          groupedNodes.x = coordinates.x;
-          groupedNodes.y = coordinates.y;
-        }
+        groupedNodes.x = coordinates === undefined ? i >= 4 ? 3300 : -400 : coordinates.x;
+        groupedNodes.y = coordinates === undefined ? 965 + (1783 * (i >= 4 ? (i - 4) : (i - 1))) : coordinates.y;
       } else {
         await figma.clientStorage.deleteAsync(`player_${i}_coords`);
-
-        if (i >= 4) {
-          groupedNodes.x = 3300;
-          groupedNodes.y = 965 + (1783 * (i - 4));
-        } else {
-          groupedNodes.x = -400;
-          groupedNodes.y = 965 + (1783 * (i - 1));
-        }
+        groupedNodes.x = i >= 4 ? 3300 : -400;
+        groupedNodes.y = 965 + (1783 * (i >= 4 ? (i - 4) : (i - 1)));
       }
 
       // Hide extra templates given player count
@@ -159,7 +140,7 @@ export async function createTemplates(preserveLayout: boolean) {
   }
 }
 
-export function createTemplateLabel(num: number) {
+function createTemplateLabel(num: number) {
   const templateNumberBg = figma.createRectangle();
   templateNumberBg.name = "number-bg-" + num.toString();
   templateNumberBg.resize(200, 200);
@@ -176,10 +157,7 @@ export function createTemplateLabel(num: number) {
   templateNumberBg.y = 965;
 
   const templateNumberLabel = figma.createText();
-  templateNumberLabel.fontName = {
-    family: "Inter",
-    style: "Bold"
-  }
+  templateNumberLabel.fontName = { family: "Inter", style: "Bold" }
   templateNumberLabel.name = num.toString();
   templateNumberLabel.characters = num.toString();
   templateNumberLabel.x = -324;
@@ -202,7 +180,7 @@ export function createTemplateLabel(num: number) {
   return groupedNodes;
 }
 
-export function createTemplateCanvas(num: number) {
+function createTemplateCanvas(num: number) {
   const templateCanvas = figma.createRectangle();
   templateCanvas.name = "canvas-area-" + num.toString();
   templateCanvas.resize(1000, 1000);
@@ -238,7 +216,7 @@ export function createTemplateCanvas(num: number) {
   return groupedNodes;
 }
 
-export function createTemplateSourceImage(num: number) {
+function createTemplateSourceImage(num: number) {
   const templateSourceImage = figma.createRectangle();
   templateSourceImage.name = "source-image-area-" + num.toString();
   templateSourceImage.resize(1000, 1000);
@@ -274,7 +252,7 @@ export function createTemplateSourceImage(num: number) {
   return groupedNodes;
 }
 
-export function createArchivedRounds() {
+function createArchivedRounds() {
   const frame = figma.createFrame();
   frame.x = 0;
   frame.y = 0;
@@ -287,4 +265,16 @@ export function createArchivedRounds() {
   frame.itemSpacing = 1000;
   frame.name = "Archived Rounds";
   return frame;
+}
+
+export {
+  createTimer,
+  createSourceImage,
+  createCanvas,
+  createHeader,
+  createTemplates,
+  createTemplateLabel,
+  createTemplateCanvas,
+  createTemplateSourceImage,
+  createArchivedRounds
 }

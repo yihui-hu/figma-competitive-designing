@@ -1,11 +1,16 @@
 /* Unminified CSS */
 /* Adapted from https://github.com/thomas-lowry/figma-plugin-ds */
 
+.container {
+  padding: 18px;
+}
+
 a {
   color: black;
   text-decoration: none;
   transition: 0.1s ease;
   border-bottom: 1px solid transparent;
+  cursor: pointer;
 }
 
 a:hover {
@@ -19,8 +24,33 @@ img {
   opacity: 20%;
 }
 
-#broom {
+#message {
+  display: none;
+  margin-top: 11px;
+  background-color: #fde1db;
+  padding: 11px;
+  border-radius: 6px;
+}
+
+#reset {
+  display: inline;
+}
+
+#resetIcon {
   transition: 0.2s ease;
+}
+
+#eyesIcon {
+  transition: 0.2s ease;
+  cursor: pointer;
+  position: absolute;
+  bottom: -32px;
+  right: -6px;
+  color: black;
+}
+
+#eyesIcon:hover {
+  transform: scale(1.2);
 }
 
 h6 {
@@ -37,8 +67,71 @@ h6 {
   border: 1px solid #e8e8e8;
   border-radius: 6px;
   padding: 10px;
-  padding-right: 24px;
   margin: 0px;
+  background-color: white;
+}
+
+.modal > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.UI_hr {
+  width: 100vw;
+  margin-inline: -18px;
+  border: 0.5px solid #e5e5e5;
+  margin-block: 18px;
+}
+
+.modal_hr {
+  width: auto;
+  padding: 0;
+  border: 0.5px solid #e5e5e5;
+  margin-top: 2px;
+  margin-bottom: 10px;
+  margin-inline: -10px;
+}
+
+.buttons_container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 11px;
+}
+
+.buttons_container > div {
+  display: flex;
+  gap: 10px;
+}
+
+.select_time {
+  margin-top: 20px;
+  display: inline !important;
+  font-size: 12px;
+}
+
+.select_players_img {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 30px;
+}
+
+.player_img {
+  width: 48px;
+  height: 64px;
+}
+
+.select_players_menu {
+  margin-top: 10px;
+  margin-left: -4px;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0px;
+  margin: 18px;
   background-color: white;
 }
 
@@ -208,6 +301,8 @@ body {
 
 .button--primary {
   background-color: var(--black);
+  cursor: pointer;
+  padding: 0px 17px 0px 17px;
 }
 
 .button--primary:enabled:active,
@@ -380,4 +475,82 @@ body {
   -ms-user-select: none;
   user-select: none;
   padding: 0;
+}
+
+.switch {
+  align-items: center;
+  cursor: default;
+  display: flex;
+  height: var(--size-medium);
+  position: relative;
+  margin-left: -8px;
+  margin-top: -8px;
+}
+
+.switch__toggle {
+  opacity: 0;
+}
+
+.switch__toggle:checked + .switch__label:before {
+  color: var(--black8);
+  background-color: var(--black8-opaque);
+}
+
+.switch__toggle:checked + .switch__label:after {
+  transform: translateX(12px);
+}
+
+.switch__toggle:checked:disabled + .switch__label:before {
+  border: 1px solid var(--black);
+  background-color: var(--black);
+}
+
+.switch__toggle:disabled + .switch__label {
+  color: var(--black);
+  opacity: 0.3;
+}
+
+.switch__label {
+  align-items: center;
+  color: var(--black8);
+  display: flex;
+  font-family: var(--font-stack);
+  font-size: var(--font-size-xsmall);
+  font-weight: var(--font-weight-normal);
+  height: 100%;
+  letter-spacing: var(--font-letter-spacing-pos-xsmall);
+  line-height: var(--font-line-height);
+  margin-left: 20px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.switch__label:before {
+  background-color: var(--white);
+  border: 1px solid var(--black8-opaque);
+  border-radius: 6px;
+  content: "";
+  display: block;
+  height: 10px;
+  left: 8px;
+  position: absolute;
+  top: 10px;
+  transition: background-color 0 0.2s;
+  width: 22px;
+}
+
+.switch__label:after {
+  background-color: var(--white);
+  border: 1px solid var(--black8-opaque);
+  border-radius: 50%;
+  content: "";
+  display: block;
+  height: 10px;
+  left: 8px;
+  position: absolute;
+  top: 10px;
+  transition: transform 0.2s;
+  width: 10px;
 }

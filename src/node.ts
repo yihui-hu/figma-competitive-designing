@@ -102,6 +102,7 @@ export async function createHeader(memotime: string, playtime: string) {
       visible: true,
     },
   ];
+  header.locked = true;
   playPage.appendChild(header);
 }
 
@@ -110,19 +111,34 @@ export async function createTemplates(preserveLayout: boolean) {
   await figma.loadFontAsync({ family: "Inter", style: "Bold" });
   const players = await figma.clientStorage.getAsync("players") ?? 5;
 
-  // Create templates for 5 players
-  for (let i = 1; i <= 5; i++) {
-    const templateLabel = createTemplateLabel(i);
-    const templateCanvas = createTemplateCanvas(i);
-    const templateSourceImage = createTemplateSourceImage(i);
-    const groupedNodes = figma.group([templateLabel, templateCanvas, templateSourceImage], playPage);
-    groupedNodes.visible = false;
-    groupedNodes.name = "Player " + i.toString();
+  try {
+    // Create templates for 5 players
+    for (let i = 1; i <= 5; i++) {
+      const templateLabel = createTemplateLabel(i);
+      const templateCanvas = createTemplateCanvas(i);
+      const templateSourceImage = createTemplateSourceImage(i);
+      const groupedNodes = figma.group([templateLabel, templateCanvas, templateSourceImage], playPage);
+      groupedNodes.visible = false;
+      groupedNodes.name = "Player " + i.toString();
 
-    // Position templates accordingly
-    if (preserveLayout) {
-      const coordinates = await figma.clientStorage.getAsync(`player_${i}_coords`);
-      if (coordinates === undefined) {
+      // Position templates accordingly
+      if (preserveLayout) {
+        const coordinates = await figma.clientStorage.getAsync(`player_${i}_coords`);
+        if (coordinates === undefined) {
+          if (i >= 4) {
+            groupedNodes.x = 3300;
+            groupedNodes.y = 965 + (1783 * (i - 4));
+          } else {
+            groupedNodes.x = -400;
+            groupedNodes.y = 965 + (1783 * (i - 1));
+          }
+        } else {
+          groupedNodes.x = coordinates.x;
+          groupedNodes.y = coordinates.y;
+        }
+      } else {
+        await figma.clientStorage.deleteAsync(`player_${i}_coords`);
+
         if (i >= 4) {
           groupedNodes.x = 3300;
           groupedNodes.y = 965 + (1783 * (i - 4));
@@ -130,24 +146,19 @@ export async function createTemplates(preserveLayout: boolean) {
           groupedNodes.x = -400;
           groupedNodes.y = 965 + (1783 * (i - 1));
         }
-      } else {
-        groupedNodes.x = coordinates.x;
-        groupedNodes.y = coordinates.y;
       }
-    } else {
-      if (i >= 4) {
-        groupedNodes.x = 3300;
-        groupedNodes.y = 965 + (1783 * (i - 4));
-      } else {
-        groupedNodes.x = -400;
-        groupedNodes.y = 965 + (1783 * (i - 1));
-      }
-    }
 
-    // Hide extra templates given player count
-    if (i <= players + 1) {
-      groupedNodes.visible = true;
+      // Hide extra templates given player count
+      if (i <= players + 1) {
+        groupedNodes.visible = true;
+      }
     }
+  } catch (err) {
+    console.log(err);
+    figma.notify("Error resetting board. Please duplicate the community file again.", {
+      timeout: 1500,
+      button: { text: "✕", action: () => { return true } }
+    });
   }
 }
 
@@ -264,4 +275,19 @@ export function createTemplateSourceImage(num: number) {
   const groupedNodes = figma.group([templateSourceImage, templateSourceImageLabel], playPage);
   groupedNodes.name = "source-image-group";
   return groupedNodes;
+}
+
+export function createArchivedRounds() {
+  const frame = figma.createFrame();
+  frame.x = 0;
+  frame.y = 0;
+  frame.fills = [];
+  frame.layoutPositioning = "AUTO";
+  frame.layoutMode = "HORIZONTAL";
+  frame.primaryAxisSizingMode = "AUTO";
+  frame.counterAxisSizingMode = "AUTO";
+  frame.verticalPadding = 500;
+  frame.itemSpacing = 1000;
+  frame.name = "Archived Rounds";
+  return frame;
 }

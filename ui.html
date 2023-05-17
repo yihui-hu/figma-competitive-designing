@@ -38,7 +38,6 @@
       border: 1px solid #e8e8e8;
       border-radius: 6px;
       padding: 10px;
-      padding-right: 24px;
       margin: 0px;
       background-color: white;
     }
@@ -530,25 +529,37 @@
       </button>
     </div>
 
-    <hr style="width: 100vw; margin-inline: -18px; border: 0.5px solid #e5e5e5; margin-top: 18px; margin-bottom: 18px;">
+    <hr style="width: 100vw; margin-inline: -18px; border: 0.5px solid #e5e5e5; margin-block: 18px;">
 
     <h4 onclick="infoButtonPressed()"
       style="cursor: pointer; position: absolute; bottom: -32px; right: -6px; color: black;" width="15">👀</h4>
   </footer>
 
   <div id="modal" class="modal">
+    <h6 style="display: flex; font-weight: 500;">
+      Preferences
+    </h6>
+    <div style="height: 6px"></div>
     <div class="switch">
       <input class="switch__toggle" type="checkbox" id="resetToggle" checked>
       <label class="switch__label" for="resetToggle">Preserve layout on reset</label>
     </div>
+    <hr style="width: auto; padding: 0; border: 0.5px solid #e5e5e5; margin-top: 2px; margin-bottom: 10px; margin-inline: -10px;">
+    <h6 style="display: flex; font-weight: 500;">
+      About
+    </h6>
+    <div style="height: 6px"></div>
     <h6 style="display: flex;">
-      <a href="">How to play</a>
+      <a href="https://google.com" target="_blank">How to play</a>
     </h6>
     <div style="height: 6px"></div>
     <h6 style="display: flex;">
       <a href="https://github.com/yihui-hu/figma-competitive-design" target="_blank">GitHub</a>
     </h6>
     <div style="height: 6px"></div>
+    <h6 style="display: flex;">
+      <a href="https://www.are.na/christina/competitive-design-website-repo" target="_blank">Are.na</a>
+    </h6>
   </div>
 </body>
 
@@ -660,26 +671,19 @@
     parent.postMessage({ pluginMessage: { type: "updateHeader", times: times } }, '*')
   }
 
-  // Hide error message
+  // Hide error message when user enters Are.na url
   document.getElementById("url").addEventListener("input", (event) => {
     document.getElementById("message").style.display = "none";
   })
-
 </script>
 
 <!-- Scripts to handle behaviour of plugin given user action -->
 <script>
-  const memotime_texts = {
+  const timingMapping = {
     "1": "0:01",
     "10": "0:10",
     "30": "0:30",
     "45": "0:45",
-    "60": "1:00"
-  }
-
-  const playtime_texts = {
-    "1": "0:01",
-    "10": "0:10",
     "60": "1:00",
     "180": "3:00",
     "300": "5:00",
@@ -687,7 +691,7 @@
   }
 
   document.getElementById("play").onclick = () => {
-    // Clear previous error message
+    // Clear previous error message if any
     document.getElementById("message").style.display = "none";
 
     // Default channel URL will point to are.na competitive designing repo
@@ -704,18 +708,18 @@
     var memotime = mt_options.options[mt_options.selectedIndex].value;
     var memotime_index = mt_options.selectedIndex;
 
-    // Get num players
+    // Get number of players
     var np_options = document.getElementById("players");
     var num_players = np_options.options[np_options.selectedIndex].value;
     var num_players_index = np_options.selectedIndex;
 
-    // Get playtime
+    // Get playtime 
     var pt_options = document.getElementById("playtime");
     var playtime = pt_options.options[pt_options.selectedIndex].value;
     var playtime_index = pt_options.selectedIndex;
 
-    var memotime_text = memotime_texts[memotime] ?? "0:30";
-    var playtime_text = playtime_texts[playtime] ?? "3:00";
+    var memotime_text = timingMapping[memotime] ?? "0:30";
+    var playtime_text = timingMapping[playtime] ?? "3:00";
 
     console.log("Time before source image disappears: " + memotime_text);
     console.log("Number of players: " + num_players);
@@ -730,14 +734,14 @@
         memotime: memotime,
         memotime_text: memotime_text,
         memotime_index: memotime_index,
-        playtime_text: playtime_text,
         playtime: playtime,
+        playtime_text: playtime_text,
         playtime_index: playtime_index,
       }
     }, '*')
   }
 
-  // Update setting / behaviour of reset board
+  // Update setting / behaviour of reset board when toggled
   document.getElementById("resetToggle").addEventListener("change", (event) => {
     const checked = document.getElementById("resetToggle").checked;
     parent.postMessage({ pluginMessage: { type: "updateSettings", checked: checked } }, '*')

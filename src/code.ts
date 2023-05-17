@@ -67,6 +67,20 @@ figma.ui.onmessage = async (msg) => {
   }
 };
 
+// Listen to changes in template movement
+figma.on("documentchange", () => {
+  const selectedNode = figma.currentPage.selection[0];
+
+  if (selectedNode && /Player \d+$/.test(selectedNode.name)) {
+    const currentCoordinates = {
+      x: selectedNode.x,
+      y: selectedNode.y,
+    };
+    const player_number = selectedNode.name.split(" ")[1];
+    figma.clientStorage.setAsync(`player_${player_number}_coords`, currentCoordinates);
+  }
+});
+
 // Set up play area and initiate game
 async function playGame(msg: any) {
   // Clear previous rounds, if any
@@ -237,26 +251,9 @@ async function resetBoard(userCleared: boolean) {
     const memotime_text = await figma.clientStorage.getAsync("memo_time_text") ?? "30 seconds";
     const playtime_text = await figma.clientStorage.getAsync("playtime_text") ?? "3 minutes";
 
-    if (!preserveLayout) {
-      for (const node of playPage.children) node.remove();
-      await Node.createHeader(memotime_text, playtime_text);
-      await Node.createTemplates();
-    } else {
-      // create templates from saved storage coordinates
-      const nodes = playPage.findAll((node) => {
-        return (
-          /source-img-\d+$/.test(node.name) ||
-          /canvas-\d+$/.test(node.name) ||
-          node.name === "playtimer" ||
-          node.name === "memotimer" ||
-          node.name === "countdowntimer"
-        );
-      }) ?? [];
-    
-      for (const node of nodes) {
-        node.remove();
-      }
-    }
+    for (const node of playPage.children) node.remove();
+    await Node.createHeader(memotime_text, playtime_text);
+    await Node.createTemplates(preserveLayout);
 
     if (userCleared) figma.notify("Board reset ✨", {
       timeout: 1500,

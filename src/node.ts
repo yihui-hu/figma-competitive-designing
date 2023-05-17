@@ -105,7 +105,7 @@ export async function createHeader(memotime: string, playtime: string) {
   playPage.appendChild(header);
 }
 
-export async function createTemplates() {
+export async function createTemplates(preserveLayout: boolean) {
   await figma.loadFontAsync({ family: "Inter", style: "Regular" });
   await figma.loadFontAsync({ family: "Inter", style: "Bold" });
   const players = await figma.clientStorage.getAsync("players") ?? 5;
@@ -116,20 +116,37 @@ export async function createTemplates() {
     const templateCanvas = createTemplateCanvas(i);
     const templateSourceImage = createTemplateSourceImage(i);
     const groupedNodes = figma.group([templateLabel, templateCanvas, templateSourceImage], playPage);
+    groupedNodes.visible = false;
     groupedNodes.name = "Player " + i.toString();
 
     // Position templates accordingly
-    if (i >= 4) {
-      groupedNodes.x = 3300;
-      groupedNodes.y = 965 + (1783 * (i - 4));
+    if (preserveLayout) {
+      const coordinates = await figma.clientStorage.getAsync(`player_${i}_coords`);
+      if (coordinates === undefined) {
+        if (i >= 4) {
+          groupedNodes.x = 3300;
+          groupedNodes.y = 965 + (1783 * (i - 4));
+        } else {
+          groupedNodes.x = -400;
+          groupedNodes.y = 965 + (1783 * (i - 1));
+        }
+      } else {
+        groupedNodes.x = coordinates.x;
+        groupedNodes.y = coordinates.y;
+      }
     } else {
-      groupedNodes.x = -400;
-      groupedNodes.y = 965 + (1783 * (i - 1));
+      if (i >= 4) {
+        groupedNodes.x = 3300;
+        groupedNodes.y = 965 + (1783 * (i - 4));
+      } else {
+        groupedNodes.x = -400;
+        groupedNodes.y = 965 + (1783 * (i - 1));
+      }
     }
 
     // Hide extra templates given player count
-    if (i > players + 1) {
-      groupedNodes.visible = false;
+    if (i <= players + 1) {
+      groupedNodes.visible = true;
     }
   }
 }
@@ -189,7 +206,6 @@ export function createTemplateCanvas(num: number) {
   templateCanvas.strokeWeight = 10;
   templateCanvas.strokeCap = "ROUND";
   templateCanvas.strokeJoin = "ROUND";
-
 
   const templateCanvasLabel = figma.createText();
   templateCanvasLabel.name = "Canvas";

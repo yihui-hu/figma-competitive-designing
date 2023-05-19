@@ -1,45 +1,62 @@
-Below are the steps to get your plugin running. You can also find instructions at:
+# Figma Competitive Designing Plugin
 
-  https://www.figma.com/plugin-docs/plugin-quickstart/
+(TODO: add thumbnail image of plugin here)
 
-This plugin template uses Typescript and NPM, two standard tools in creating JavaScript applications.
+## What is Competitive Designing?
 
-First, download Node.js which comes with NPM. This will allow you to install TypeScript and other
-libraries. You can find the download link here:
+Given a screenshot of a design (in this case, a website), you have X amount of time to memorize it and Y amount of time to replicate it. Using online image differentiator tools, whoever's design best matches the original wins.  
 
-  https://nodejs.org/en/download/
+This game relies heavily on your ability to not only memorize, but also parse key parts of a design, and tests your proficiency in navigating the many design tools and shortcuts that Figma has to offer.  
 
-Next, install TypeScript using the command:
+Watch the [companion video](TODO: link video here) for more info on this riveting mind sport!
 
-  npm install -g typescript
+## Installation:
 
-Finally, in the directory of your plugin, get the latest type definitions for the plugin API by running:
+Although this plugin is open source, and you can build / run it locally (see [Development](#development)), the preferred method of installation is through the Figma plugin community page (TODO: insert link here).
 
-  npm install --save-dev @figma/plugin-typings
+## Setup & Usage:
 
-If you are familiar with JavaScript, TypeScript will look very familiar. In fact, valid JavaScript code
-is already valid Typescript code.
+(add screenshot of community file here)  
 
-TypeScript adds type annotations to variables. This allows code editors such as Visual Studio Code
-to provide information about the Figma API while you are writing code, as well as help catch bugs
-you previously didn't notice.
+1. Duplicate the companion community file, which can be found here (TODO: insert link here).
+2. Open the plugin on the ***Play*** page of the file.
+3. Customize the memorization and play time, as well as number of players.
+4. Optionally, provide a link to an Are.na channel for source images. Leaving it blank sets it to this [default channel](https://www.are.na/christina/competitive-design-website-repo).
+5. Play on!
 
-For more information, visit https://www.typescriptlang.org/
+## Notes:
 
-Using TypeScript requires a compiler to convert TypeScript (code.ts) into JavaScript (code.js)
-for the browser to run.
+1. The plugin automatically displays a timer for each phase of the game (starting countdown, memorization time, and play time).
+2. A copy of the play area, including all your work, will automatically be saved to the ***Archive*** page after each round.
+3. Pressing Play automatically discards any work from the previous round, so there's no need to manually reset the board after each round.
+4. Feel free to move the templates around the page! In settings, there's an option to preserve the layout on reset, or you can leave it unchecked to have the templates reset to their default positions each time.
 
-We recommend writing TypeScript code using Visual Studio code:
+## Development:
+```bash
+# clone project
+git clone https://github.com/yihui-hu/figma-competitive-designing.git
+cd figma-competitive-designing
 
-1. Download Visual Studio Code if you haven't already: https://code.visualstudio.com/.
-2. Open this directory in Visual Studio Code.
-3. Compile TypeScript to JavaScript: Run the "Terminal > Run Build Task..." menu item,
-    then select "npm: watch". You will have to do this again every time
-    you reopen Visual Studio Code.
+# install dependencies
+npm install
 
-That's it! Visual Studio Code will regenerate the JavaScript file every time you save.
+# build project
+npm run build
+```
 
-Credits:
-https://github.com/thomas-lowry/figma-plugin-ds
+We recommend reading Figma's official [Plugin QuickStart Guide](https://www.figma.com/plugin-docs/plugin-quickstart-guide) on how to run plugins locally.
 
-hi
+## Potential Expansions:
+- Custom memorization and play times
+- More game modes (zen: no time limit, etc.)
+
+## Authors:
+[Christina Chen](https://christinalj.com) & [Yihui Hu](https://yhhu.xyz)
+
+## Tooling / Resources:
+- HTML & CSS
+- TypeScript
+- Webpack
+- Timer logic adapted from [Figma-Timer](https://github.com/lennet/Figma-Timer)
+- Styles adapted from [figma-plugin-ds](https://github.com/thomas-lowry/figma-plugin-ds)
+- Inspired by [Intro to Competitive Programming](https://www.youtube.com/watch?v=tZ5FBBnHfm4)

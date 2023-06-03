@@ -12,7 +12,7 @@
 - [x] Link to Are.na competitive design repo in info modal
 - [x] Update modal design
 - [x] Design favicon
-- [ ] Light and dark mode 
+- [x] Light and dark mode 
 - [ ] Figma community file
 - [ ] Design Play & Archive pages default state
 

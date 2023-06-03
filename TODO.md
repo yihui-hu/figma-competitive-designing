@@ -31,7 +31,7 @@
 - [x] Reset board (with option to preserve layout)
 - [x] Create Archived Rounds auto-layout if not present while archiving
 - [ ] Cache image links / page number / index (better for no repeats)
-- [ ] if page is empty, automatically reset board? 
+- [ ] if file is empty / playing for first time, automatically reset board + create archive?
 - [ ] delay appearance of canvas until after the screenshot disappears 
 
 ## Bugs

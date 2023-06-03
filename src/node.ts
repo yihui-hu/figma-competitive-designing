@@ -24,7 +24,7 @@ function createTimer(
 ) {
   const refNodeName: string = position === "right" ? "source-image-area-" + index.toString() : "canvas-area-" + index.toString();
   const refNode = playPage.findAll(n => n.name === refNodeName);
-  const isLightMode = hex_is_light(colors.color);
+  const isLightMode = checkLightMode(colors.color);
 
   const timer = figma.createText();
   timer.name = timerName;
@@ -86,7 +86,7 @@ function createCanvas(index: number) {
 async function createHeader(memotime: string, playtime: string) {
   await figma.loadFontAsync({ family: "Inter", style: "Regular" });
   await figma.loadFontAsync({ family: "IBM Plex Mono", style: "SemiBold" });
-  const isLightMode = hex_is_light(colors.color);
+  const isLightMode = checkLightMode(colors.color);
 
   const header = figma.createText();
   header.fontName = { family: "IBM Plex Mono", style: "SemiBold" }
@@ -149,11 +149,12 @@ async function createTemplates(preserveLayout: boolean) {
 }
 
 function createTemplateLabel(num: number) {
-  const isLightMode = hex_is_light(colors.color);
+  const isLightMode = checkLightMode(colors.color);
   
   const templateNumberBg = figma.createRectangle();
   templateNumberBg.name = "number-bg-" + num.toString();
   templateNumberBg.resize(200, 200);
+  templateNumberBg.cornerRadius = 100;
   templateNumberBg.x = -400;
   templateNumberBg.y = 965;
   templateNumberBg.isMask = true;
@@ -162,7 +163,7 @@ function createTemplateLabel(num: number) {
   templateNumberLabel.fontName = { family: "Inter", style: "Bold" }
   templateNumberLabel.name = num.toString();
   templateNumberLabel.characters = num.toString();
-  templateNumberLabel.x = -324;
+  templateNumberLabel.x = -330;
   templateNumberLabel.y = 1004;
   templateNumberLabel.fontSize = 100;
 
@@ -182,7 +183,7 @@ function createTemplateLabel(num: number) {
 }
 
 function createTemplateCanvas(num: number) {
-  const isLightMode = hex_is_light(colors.color);
+  const isLightMode = checkLightMode(colors.color);
 
   const templateCanvas = figma.createRectangle();
   templateCanvas.name = "canvas-area-" + num.toString();
@@ -226,7 +227,7 @@ function createTemplateCanvas(num: number) {
 }
 
 function createTemplateSourceImage(num: number) {
-  const isLightMode = hex_is_light(colors.color);
+  const isLightMode = checkLightMode(colors.color);
 
   const templateSourceImage = figma.createRectangle();
   templateSourceImage.name = "source-image-area-" + num.toString();
@@ -286,7 +287,7 @@ function createArchivedRounds() {
 
 // To determine element colors in light / dark mode
 // https://stackoverflow.com/questions/12043187/how-to-check-if-hex-color-is-too-black
-function hex_is_light(color: { r: number, g: number, b: number }) {
+function checkLightMode(color: { r: number, g: number, b: number }) {
   const luma = 0.2126 * 255 * color.r + 0.7152 * 255 * color.g + 0.0722 * 255 *  color.b;
   return luma > 40;
 }

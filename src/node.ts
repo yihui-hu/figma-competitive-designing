@@ -13,12 +13,18 @@ function src_canvas_y(i: number) { return src_canvas_first_y + (i - 1) * src_can
 
 // Get playing area page
 const playPage = figma.root.findChild(node => node.name === 'Play') ?? figma.currentPage;
+const colors: SolidPaint = playPage.backgrounds[0] as SolidPaint;
 
-function createTimer(timerName: string, timerText: string, time: string,
-  position: string, index: number) {
-
+function createTimer(
+  timerName: string, 
+  timerText: string, 
+  time: string,
+  position: string, 
+  index: number
+) {
   const refNodeName: string = position === "right" ? "source-image-area-" + index.toString() : "canvas-area-" + index.toString();
   const refNode = playPage.findAll(n => n.name === refNodeName);
+  const isLightMode = hex_is_light(colors.color);
 
   const timer = figma.createText();
   timer.name = timerName;
@@ -29,12 +35,13 @@ function createTimer(timerName: string, timerText: string, time: string,
   timer.fills = [
     {
       blendMode: "NORMAL",
-      color: { r: 1, g: 1, b: 1 },
-      opacity: 1,
+      color: isLightMode ? { r: 0, g: 0, b: 0 } : { r: 1, g: 1, b: 1},
+      opacity: 0.9,
       type: "SOLID",
       visible: true,
     },
   ];
+
   playPage.appendChild(timer);
 
   return timer;
@@ -79,6 +86,7 @@ function createCanvas(index: number) {
 async function createHeader(memotime: string, playtime: string) {
   await figma.loadFontAsync({ family: "Inter", style: "Regular" });
   await figma.loadFontAsync({ family: "IBM Plex Mono", style: "SemiBold" });
+  const isLightMode = hex_is_light(colors.color);
 
   const header = figma.createText();
   header.fontName = { family: "IBM Plex Mono", style: "SemiBold" }
@@ -90,8 +98,8 @@ async function createHeader(memotime: string, playtime: string) {
   header.fills = [
     {
       blendMode: "NORMAL",
-      color: { r: 1, g: 1, b: 1 },
-      opacity: 1,
+      color: isLightMode ? { r: 0, g: 0, b: 0 } : { r: 1, g: 1, b: 1 },
+      opacity: 0.9,
       type: "SOLID",
       visible: true,
     },
@@ -141,20 +149,14 @@ async function createTemplates(preserveLayout: boolean) {
 }
 
 function createTemplateLabel(num: number) {
+  const isLightMode = hex_is_light(colors.color);
+  
   const templateNumberBg = figma.createRectangle();
   templateNumberBg.name = "number-bg-" + num.toString();
   templateNumberBg.resize(200, 200);
-  templateNumberBg.fills = [
-    {
-      blendMode: "NORMAL",
-      color: { r: 1, g: 1, b: 1 },
-      opacity: 1,
-      type: "SOLID",
-      visible: true,
-    },
-  ];
   templateNumberBg.x = -400;
   templateNumberBg.y = 965;
+  templateNumberBg.isMask = true;
 
   const templateNumberLabel = figma.createText();
   templateNumberLabel.fontName = { family: "Inter", style: "Bold" }
@@ -163,29 +165,36 @@ function createTemplateLabel(num: number) {
   templateNumberLabel.x = -324;
   templateNumberLabel.y = 1004;
   templateNumberLabel.fontSize = 100;
-  templateNumberLabel.fills = [
+
+  const subtraction = figma.subtract([templateNumberLabel, templateNumberBg], playPage);
+  subtraction.name = "number-group";
+  subtraction.fills = [
     {
       blendMode: "NORMAL",
-      color: { r: 0, g: 0, b: 0 },
-      opacity: 1,
+      color: isLightMode ? { r: 0, g: 0, b: 0 } : { r: 1, g: 1, b: 1 },
+      opacity: 0.9,
       type: "SOLID",
       visible: true,
     },
   ];
-
-  playPage.appendChild(templateNumberBg);
-  playPage.appendChild(templateNumberLabel);
-  const groupedNodes = figma.group([templateNumberBg, templateNumberLabel], playPage);
-  groupedNodes.name = "number-group";
-  return groupedNodes;
+  playPage.appendChild(subtraction);
+  return subtraction;
 }
 
 function createTemplateCanvas(num: number) {
+  const isLightMode = hex_is_light(colors.color);
+
   const templateCanvas = figma.createRectangle();
   templateCanvas.name = "canvas-area-" + num.toString();
   templateCanvas.resize(1000, 1000);
   templateCanvas.fills = [];
-  templateCanvas.strokes = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 }, opacity: 1 }];
+  templateCanvas.strokes = [
+    { 
+      type: 'SOLID', 
+      color: isLightMode ? { r: 0, g: 0, b: 0 } : { r: 1, g: 1, b: 1 }, 
+      opacity: 0.9
+    }
+  ];
   templateCanvas.dashPattern = [100, 100];
   templateCanvas.x = 0;
   templateCanvas.y = 965;
@@ -202,7 +211,7 @@ function createTemplateCanvas(num: number) {
   templateCanvasLabel.fills = [
     {
       blendMode: "NORMAL",
-      color: { r: 1, g: 1, b: 1 },
+      color: isLightMode ? { r: 0, g: 0, b: 0} : { r: 1, g: 1, b: 1 },
       opacity: 1,
       type: "SOLID",
       visible: true,
@@ -217,11 +226,19 @@ function createTemplateCanvas(num: number) {
 }
 
 function createTemplateSourceImage(num: number) {
+  const isLightMode = hex_is_light(colors.color);
+
   const templateSourceImage = figma.createRectangle();
   templateSourceImage.name = "source-image-area-" + num.toString();
   templateSourceImage.resize(1000, 1000);
   templateSourceImage.fills = [];
-  templateSourceImage.strokes = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 }, opacity: 0.3 }];
+  templateSourceImage.strokes = [
+    { 
+      type: 'SOLID', 
+      color: isLightMode ? { r: 0, g: 0, b: 0 } : { r: 1, g: 1, b: 1 }, 
+      opacity: 0.3 
+    }
+  ];
   templateSourceImage.dashPattern = [100, 100];
   templateSourceImage.x = 1300;
   templateSourceImage.y = 965;
@@ -238,7 +255,7 @@ function createTemplateSourceImage(num: number) {
   templateSourceImageLabel.fills = [
     {
       blendMode: "NORMAL",
-      color: { r: 1, g: 1, b: 1 },
+      color: isLightMode ? { r: 0, g: 0, b: 0 } : { r: 1, g: 1, b: 1 },
       opacity: 0.3,
       type: "SOLID",
       visible: true,
@@ -265,6 +282,13 @@ function createArchivedRounds() {
   frame.itemSpacing = 1000;
   frame.name = "Archived Rounds";
   return frame;
+}
+
+// To determine element colors in light / dark mode
+// https://stackoverflow.com/questions/12043187/how-to-check-if-hex-color-is-too-black
+function hex_is_light(color: { r: number, g: number, b: number }) {
+  const luma = 0.2126 * 255 * color.r + 0.7152 * 255 * color.g + 0.0722 * 255 *  color.b;
+  return luma > 40;
 }
 
 export {

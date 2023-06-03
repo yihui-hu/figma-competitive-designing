@@ -94,6 +94,11 @@ async function playGame(msg: any) {
     node.remove();
   }
 
+  // If starting on new, empty file, initialize board
+  if (playPage.children.length === 0) {
+    resetBoard(false);
+  }
+
   // Get user params
   const memotime = msg.memotime * 1000;
   const memotime_text = msg.memotime_text;
@@ -314,7 +319,13 @@ async function updateSettings(preserveLayout: boolean) {
 function archiveRound() {
   try {
     const nodes = playPage.children;
-    const archive = figma.root.findChild(node => node.name === 'Archive');
+    let archive = figma.root.findChild(node => node.name === 'Archive');
+    
+    if (archive === null) {
+      archive = figma.createPage();
+      archive.name = "Archive";
+    }
+
     nodes?.forEach(node => archive?.appendChild(node.clone()));
 
     // Create Archived Rounds auto-layout element if not already present

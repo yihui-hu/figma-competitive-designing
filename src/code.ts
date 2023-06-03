@@ -165,12 +165,10 @@ async function playGame(msg: any) {
     for (let i = 1; i < num_players + 1; i++) {
       // Create initial frames for source img, canvas and timers
       const source_img = Node.createSourceImage(image, i);
-      const canvas = Node.createCanvas(i);
       const countdowntimer =
         Node.createTimer("countdowntimer", "Starting in: ", "0:05", "right", i);
       Timer.start(countdowntimer, "Starting in: ");
       src_imgs.push(source_img);
-      canvases.push(canvas);
       countdowntimers.push(countdowntimer);
 
       loading.cancel();
@@ -197,6 +195,8 @@ async function playGame(msg: any) {
       for (let i = 1; i < num_players + 1; i++) {
         const playtimer = Node.createTimer("playtimer", "Time left: ",
           playtime_text, "left", i);
+        const canvas = Node.createCanvas(i);
+        canvases.push(canvas);
         Timer.start(playtimer, "Time left: ");
         playtimers.push(playtimer);
       }
@@ -208,6 +208,7 @@ async function playGame(msg: any) {
       for (const playtimer of playtimers) playtimer.remove();
 
       figma.ui.postMessage({ type: "error", message: "" });
+      figma.viewport.scrollAndZoomIntoView(playPage.children);
       figma.ui.show();
 
       archiveRound();
@@ -320,7 +321,7 @@ function archiveRound() {
   try {
     const nodes = playPage.children;
     let archive = figma.root.findChild(node => node.name === 'Archive');
-    
+
     if (archive === null) {
       archive = figma.createPage();
       archive.name = "Archive";

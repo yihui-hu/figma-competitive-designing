@@ -65,3 +65,4 @@
 
 - [ ] Test custom fonts in Figma (IBM Plex Mono, etc.)
 - [x] Finalize (default) timings for memorization and play time
+- [ ] Have player names in templates (for archival purposes)

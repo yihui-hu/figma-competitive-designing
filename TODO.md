@@ -12,6 +12,7 @@
 - [x] Link to Are.na competitive design repo in info modal
 - [x] Update modal design
 - [x] Design favicon
+- [ ] Light and dark mode 
 - [ ] Figma community file
 - [ ] Design Play & Archive pages default state
 
@@ -30,6 +31,8 @@
 - [x] Reset board (with option to preserve layout)
 - [x] Create Archived Rounds auto-layout if not present while archiving
 - [ ] Cache image links / page number / index (better for no repeats)
+- [ ] if page is empty, automatically reset board? 
+- [ ] delay appearance of canvas until after the screenshot disappears 
 
 ## Bugs
 

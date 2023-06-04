@@ -126,16 +126,17 @@
 
 <!-- Scripts to load storage and display error messages -->
 <script>
-  // Handle error messages sent back from server + restore saved settings
   onmessage = (event) => {
     const type = event.data.pluginMessage.type;
     const message = event.data.pluginMessage.message;
 
     switch (type) {
+      // Handle errors sent back from server
       case "error":
         document.getElementById("errorMessage").innerHTML = message;
         document.getElementById("message").style.display = message != "" ? "block" : "none";
         break;
+      // Restore saved settings
       case "storage":
         const storage = event.data.pluginMessage.storage;
         const arena_url = storage.arena_url;
@@ -153,7 +154,7 @@
         if (preserve_layout != undefined) document.getElementById("resetToggle").checked = preserve_layout;
 
         // Get initial number of players & (de)saturate accordingly
-        var num_players = document.getElementById("players").selectedIndex + 1
+        var num_players = document.getElementById("players").selectedIndex + 1;
         for (var j = 1; j <= num_players; j++) {
           saturatePlayerImgs(j);
         }
@@ -165,6 +166,10 @@
             document.getElementById(id).style.opacity = "100%";
           }, index * 30);
         }
+        break;
+      default:
+        console.log("Unknown message posted from server.");
+        break;
     }
   }
 </script>
@@ -185,11 +190,7 @@
   // Display modal when info button is pressed
   function infoButtonPressed() {
     const hidden = document.getElementById("modal").style.display == "" || document.getElementById("modal").style.display == "none";
-    if (hidden) {
-      document.getElementById("modal").style.display = "block";
-    } else {
-      document.getElementById("modal").style.display = "none";
-    }
+    document.getElementById("modal").style.display = hidden ? "block" : "none";
   }
 
   // Update templates & character highlights when number of players changes
@@ -243,7 +244,7 @@
     // Clear previous error message if any
     document.getElementById("message").style.display = "none";
 
-    // Choose default Are.na competitive designing repo or user inputted URL
+    // Choose default Are.na competitive designing repo, or user inputted URL
     var url = "https://www.are.na/christina/competitive-design-website-repo"
     var url_input = document.getElementById('url').value;
     if (url_input.trim().length != 0) url = url_input;

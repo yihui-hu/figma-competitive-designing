@@ -32,6 +32,8 @@
 - [x] Create Archived Rounds auto-layout if not present while archiving
 - [x] if file is empty / playing for first time, automatically reset board + create archive?
 - [x] delay appearance of canvas until after the screenshot disappears 
+- [x] Center template number labels using auto layout
+- [ ] Reset settings to default in modal (then do we need to preserve layout?)
 - [ ] Cache image links / page number / index (better for no repeats)
 
 ## Bugs
@@ -46,11 +48,13 @@
 - [x] Specify number of players
 - [x] Clear board (user directed / when new round begins)
 - [x] Automatically archive rounds to new page
+- [x] Templates adapt to light / dark mode
 
 ## Documentation / Code
 
 - [x] Webpack bundling
 - [x] Tags in GitHub repo
+- [x] Document clientStorage
 - [ ] Complete README
 - [ ] Remove console.logs
 - [ ] Reduce / remove magic numbers
@@ -59,10 +63,9 @@
     - [ ] Consolidate CSS in css/styles.css
 - [ ] Modularize code with webpack
 - [ ] Standardize variable names
-- [ ] Document clientStorage
 
 ##  To check / think about:
 
 - [ ] Test custom fonts in Figma (IBM Plex Mono, etc.)
 - [x] Finalize (default) timings for memorization and play time
-- [ ] Have player names in templates (for archival purposes)
+- [x] Have player names in templates (for archival purposes)

@@ -6,11 +6,16 @@
 
 import * as Timer from "./timer";
 import * as Node from "./node";
+import { TimerProps } from "./interface";
 
 console.clear();
 
 // Show the HTML page for the plugin as designed in ui.html
 figma.showUI(__html__, { height: 385 });
+
+// Update template colors if necessary
+const colors: SolidPaint = figma.currentPage.backgrounds[0] as SolidPaint;
+Node.updateColors(colors.color);
 
 // Retrieve saved settings from Figma's clientStorage, if they exist
 async function getStorage() {
@@ -19,14 +24,14 @@ async function getStorage() {
   const memo_time = await figma.clientStorage.getAsync("memo_time");
   const playtime = await figma.clientStorage.getAsync("playtime");
   const pages = await figma.clientStorage.getAsync("pages");
-  const preserve_layout = await figma.clientStorage.getAsync("preserve_layout")
+  const preserve_layout = await figma.clientStorage.getAsync("preserve_layout");
   const storage = {
     arena_url: arena_url,
     players: players,
     memo_time: memo_time,
     playtime: playtime,
     pages: pages,
-    preserve_layout: preserve_layout
+    preserve_layout: preserve_layout,
   };
   figma.ui.postMessage({ type: "storage", storage: storage });
 }
@@ -36,7 +41,7 @@ getStorage();
 const ARENA_API_BASE_URL = "https://api.are.na/v2";
 
 // Get playing area page
-const playPage = figma.root.findChild(node => node.name === 'Play') ?? figma.currentPage;
+const playPage = figma.root.findChild((node) => node.name === "Play") ?? figma.currentPage;
 
 // Listen to messages posted from Figma plugin UI
 figma.ui.onmessage = async (msg) => {
@@ -61,21 +66,28 @@ figma.ui.onmessage = async (msg) => {
       break;
     default:
       figma.closePlugin();
+      break;
   }
 };
 
-// Listen to changes in templates' position & save to storage 
-figma.on("documentchange", () => {
+// Listen to changes in templates' position & save to storage
+figma.on("documentchange", async () => {
   const selectedNode = figma.currentPage.selection[0];
 
   if (selectedNode && /Player \d+$/.test(selectedNode.name)) {
-    const currentCoordinates = {
-      x: selectedNode.x,
-      y: selectedNode.y,
-    };
+    const currentCoordinates = { x: selectedNode.x, y: selectedNode.y };
     const player_number = selectedNode.name.split(" ")[1];
-    figma.clientStorage.setAsync(`player_${player_number}_coords`, currentCoordinates);
+    await figma.clientStorage.setAsync(`player_${player_number}_coords`, currentCoordinates);
   }
+
+  if (selectedNode && /player-\d+$/.test(selectedNode.name)) {
+    const currentText = (selectedNode as TextNode).characters;
+    const player_number = selectedNode.name.split("-")[1];
+    await figma.clientStorage.setAsync(`player_${player_number}_name`, currentText);
+  }
+
+  const colors: SolidPaint = figma.currentPage.backgrounds[0] as SolidPaint;
+  Node.updateColors(colors.color);
 });
 
 // Set up play area and initiate game
@@ -90,9 +102,7 @@ async function playGame(msg: any) {
       node.name === "countdowntimer"
     );
   }) ?? [];
-  for (const node of nodes) {
-    node.remove();
-  }
+  for (const node of nodes) node.remove();
 
   // If starting on new, empty file, initialize board
   if (playPage.children.length === 0) {
@@ -111,13 +121,14 @@ async function playGame(msg: any) {
   const loading = figma.notify("Loading...", { timeout: Infinity });
 
   // Get URL to random source image from specified Are.na channel
-  var source_img: string;
+  let source_img: string;
   try {
     const storedURL = await figma.clientStorage.getAsync("arena_url");
     const pages = await figma.clientStorage.getAsync("pages");
-    const page_number = (storedURL === msg.url && pages !== undefined) ?
-      Math.floor(Math.random() * pages) :
-      await getPageNumber(ARENA_API_BASE_URL, channelSlug);
+    const page_number =
+      storedURL === msg.url && pages !== undefined
+        ? Math.floor(Math.random() * pages)
+        : await getPageNumber(ARENA_API_BASE_URL, channelSlug);
     const response = await fetch(
       `${ARENA_API_BASE_URL}/channels/${channelSlug}/contents?page=${page_number}`
     );
@@ -139,6 +150,7 @@ async function playGame(msg: any) {
 
     const randomIndex = Math.floor(Math.random() * images.length);
     source_img = images[randomIndex].image.large.url;
+    // If Are.na link is invalid
   } catch (err) {
     figma.ui.postMessage({
       type: "error",
@@ -152,11 +164,11 @@ async function playGame(msg: any) {
   figma.ui.hide();
 
   const tree = playPage;
-  const src_imgs = tree.findAll((node) => { return node.name === "source-img"; });
-  const canvases = tree.findAll((node) => { return node.name === "canvas"; });
-  const memotimers = tree.findAll((node) => { return node.name === "memotimer"; });
-  const playtimers = tree.findAll((node) => { return node.name === "playtimer"; });
-  const countdowntimers = tree.findAll((node) => { return node.name === "countdowntimer"; });
+  const src_imgs = tree.findAll((node) => { return node.name === "source-img" });
+  const canvases = tree.findAll((node) => { return node.name === "canvas" });
+  const memotimers = tree.findAll((node) => { return node.name === "memotimer" });
+  const playtimers = tree.findAll((node) => { return node.name === "playtimer" });
+  const countdowntimers = tree.findAll((node) => { return node.name === "countdowntimer" });
 
   // Main game loop
   figma.createImageAsync(source_img).then(async (image: Image) => {
@@ -165,8 +177,14 @@ async function playGame(msg: any) {
     for (let i = 1; i < num_players + 1; i++) {
       // Create initial frames for source img, canvas and timers
       const source_img = Node.createSourceImage(image, i);
-      const countdowntimer =
-        Node.createTimer("countdowntimer", "Starting in: ", "0:05", "right", i);
+      const timerProps: TimerProps = {
+        name: "countdowntimer",
+        text: "Starting in: ",
+        time: "0:05",
+        position: "right",
+        index: i,
+      };
+      const countdowntimer = Node.createTimer(timerProps);
       Timer.start(countdowntimer, "Starting in: ");
       src_imgs.push(source_img);
       countdowntimers.push(countdowntimer);
@@ -180,8 +198,14 @@ async function playGame(msg: any) {
       for (const node of countdowntimers) node.remove();
 
       for (let i = 1; i < num_players + 1; i++) {
-        const memotimer =
-          Node.createTimer("countdowntimer", "Time left: ", memotime_text, "right", i);
+        const timerProps: TimerProps = {
+          name: "memotimer",
+          text: "Time left: ",
+          time: memotime_text,
+          position: "right",
+          index: i,
+        };
+        const memotimer = Node.createTimer(timerProps);
         Timer.start(memotimer, "Time left: ");
         memotimers.push(memotimer);
       }
@@ -193,8 +217,14 @@ async function playGame(msg: any) {
       for (const node of memotimers) node.remove();
 
       for (let i = 1; i < num_players + 1; i++) {
-        const playtimer = Node.createTimer("playtimer", "Time left: ",
-          playtime_text, "left", i);
+        const timerProps: TimerProps = {
+          name: "playtimer",
+          text: "Time left: ",
+          time: playtime_text,
+          position: "left",
+          index: i,
+        };
+        const playtimer = Node.createTimer(timerProps);
         const canvas = Node.createCanvas(i);
         canvases.push(canvas);
         Timer.start(playtimer, "Time left: ");
@@ -209,7 +239,7 @@ async function playGame(msg: any) {
 
       figma.ui.postMessage({ type: "error", message: "" });
       figma.viewport.scrollAndZoomIntoView(playPage.children);
-      figma.ui.show();
+      figma.closePlugin();
 
       archiveRound();
     }, playtime + memotime + 5000);
@@ -217,32 +247,27 @@ async function playGame(msg: any) {
   }).catch((error: any) => {
     console.log(error);
     loading.cancel();
-    figma.notify("😵‍💫 Something went wrong. Try resetting the board.", {
-      timeout: 3000,
-      button: { text: "✕", action: () => { return true } }
-    });
+    sendFigmaMessage("😵‍💫 Something went wrong. Try resetting the board.", 2500);
     setTimeout(() => {
       figma.closePlugin();
     }, 3000);
   });
 }
 
-// Get random page number from Are.na channel
+// Get random page number from Are.na channel and save page count to clientStorage
 async function getPageNumber(ARENA_API_BASE_URL: string, channelSlug: string) {
   try {
     const res = await fetch(`${ARENA_API_BASE_URL}/channels/${channelSlug}`);
     const json = await res.json();
     const pages = Math.ceil(json.length / 20);
     const page_number = Math.floor(Math.random() * pages);
-
-    // Save page count to clientStorage
     await figma.clientStorage.setAsync("pages", pages);
 
     return page_number;
   } catch (err) {
     figma.ui.postMessage({
       type: "error",
-      message: "Are.na channel does not exist."
+      message: "Are.na channel does not exist.",
     });
     return;
   }
@@ -252,44 +277,44 @@ async function getPageNumber(ARENA_API_BASE_URL: string, channelSlug: string) {
 async function resetBoard(userCleared: boolean) {
   try {
     const preserveLayout = await figma.clientStorage.getAsync("preserve_layout");
-    const memotime_text = await figma.clientStorage.getAsync("memo_time_text") ?? "30 seconds";
-    const playtime_text = await figma.clientStorage.getAsync("playtime_text") ?? "3 minutes";
+    const memotime_text = (await figma.clientStorage.getAsync("memo_time_text")) ?? "30 seconds";
+    const playtime_text = (await figma.clientStorage.getAsync("playtime_text")) ?? "3 minutes";
 
     for (const node of playPage.children) node.remove();
     await Node.createHeader(memotime_text, playtime_text);
     await Node.createTemplates(preserveLayout);
 
-    if (userCleared) figma.notify("Board reset ✨", {
-      timeout: 1500,
-      button: { text: "✕", action: () => { return true } }
-    });
+    if (userCleared) sendFigmaMessage("Board reset ✨", 1500);
   } catch (err) {
     console.log(err);
-    figma.notify("Error resetting board. Please duplicate the community file again.", {
-      timeout: 1500,
-      button: { text: "✕", action: () => { return true } }
-    });
+    sendFigmaMessage("Error resetting board. Please try again.", 1500);
   }
 }
 
 // Update header information based on memorization & play time
-async function updateHeader(times: { memotime: string, playtime: string, memotime_index: number, playtime_index: number }) {
+async function updateHeader(times: {
+  memotime: string;
+  playtime: string;
+  memotime_index: number;
+  playtime_index: number;
+}) {
   try {
-    const header = playPage.findChild(n => n.type === "TEXT" && n.name === "Header");
+    const header = playPage.findChild((n) => n.type === "TEXT" && n.name === "Header") as TextNode;
     if (header !== null) {
       await figma.loadFontAsync({ family: "IBM Plex Mono", style: "SemiBold" });
-      (header as TextNode).characters = `You will have ${times.memotime} to memorize\nthe design and ${times.playtime} to replicate it.`;
+      header.characters = `You will have ${times.memotime} to memorize\nthe design and ${times.playtime} to replicate it.`;
     } else {
       await Node.createHeader(times.memotime, times.playtime);
     }
 
     // Save settings for timers
     await figma.clientStorage.setAsync("memo_time", times.memotime_index);
-    await figma.clientStorage.setAsync("playtime", times.playtime_index);
     await figma.clientStorage.setAsync("memo_time_text", times.memotime);
+    await figma.clientStorage.setAsync("playtime", times.playtime_index);
     await figma.clientStorage.setAsync("playtime_text", times.playtime);
   } catch (err) {
     console.log(err);
+    sendFigmaMessage("😵‍💫 Something went wrong. Try resetting the board.", 2500);
   }
 }
 
@@ -298,17 +323,18 @@ async function updateTemplates(index: number) {
   try {
     await figma.clientStorage.setAsync("players", index - 1);
 
-    for (var i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 5; i++) {
       const templateName = "Player " + i.toString();
-      const template = playPage.findOne(n => n.name === templateName);
+      const template = playPage.findOne((n) => n.name === templateName);
       if (template !== null) {
-        template.visible = i <= index ? true : false
+        template.visible = i <= index ? true : false;
       } else {
-        throw new Error("No template found.")
+        throw new Error("No corresponding template found.");
       }
     }
   } catch (err) {
     console.log(err);
+    sendFigmaMessage("😵‍💫 Something went wrong. Try resetting the board.", 2500);
   }
 }
 
@@ -319,18 +345,19 @@ async function updateSettings(preserveLayout: boolean) {
 // Make copy of play area once round ends and move to Archive page
 function archiveRound() {
   try {
-    const nodes = playPage.children;
-    let archive = figma.root.findChild(node => node.name === 'Archive');
-
+    const nodes = playPage.children ?? [];
+    let archive = figma.root.findChild((node) => node.name === "Archive");
+    
+    // Create Archive page if not already present
     if (archive === null) {
       archive = figma.createPage();
       archive.name = "Archive";
     }
 
-    nodes?.forEach(node => archive?.appendChild(node.clone()));
+    nodes.forEach((node) => archive?.appendChild(node.clone()));
 
     // Create Archived Rounds auto-layout element if not already present
-    let archivedRounds = archive?.findChild(node => node.name === "Archived Rounds");
+    let archivedRounds = archive?.findChild((node) => node.name === "Archived Rounds");
     if (archivedRounds === null) {
       const frame = Node.createArchivedRounds();
       archive?.appendChild(frame);
@@ -338,17 +365,21 @@ function archiveRound() {
     }
 
     // Move round to Archive Page, group, then add to auto-layout element
-    const clonedNodes: SceneNode[] = archive?.findChildren(node => {
+    const clonedNodes: SceneNode[] = archive?.findChildren((node) => {
       return node.name !== "Archived Rounds";
-    }) as SceneNode[];
+    });
     const groupedNodes = figma.group(clonedNodes, archive ?? figma.currentPage);
-    groupedNodes.name = "Archive";
+    groupedNodes.name = "Archived Round";
     (archivedRounds as FrameNode).insertChild(0, groupedNodes);
   } catch (err) {
     console.log(err);
-    figma.notify("Error archiving round.", {
-      timeout: 1500,
-      button: { text: "✕", action: () => { return true } }
-    });
+    sendFigmaMessage("😔 Error archiving round.", 1500);
   }
+}
+
+function sendFigmaMessage(message: string, time: number) {
+  figma.notify(message, {
+    timeout: time,
+    button: { text: "✕", action: () => { return true } },
+  });
 }

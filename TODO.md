@@ -33,12 +33,13 @@
 - [x] if file is empty / playing for first time, automatically reset board + create archive?
 - [x] delay appearance of canvas until after the screenshot disappears 
 - [x] Center template number labels using auto layout
-- [ ] Reset settings to default in modal (then do we need to preserve layout?)
+- [x] Reset settings to default in modal (then do we need to preserve layout?)
 - [ ] Cache image links / page number / index (better for no repeats)
 
 ## Bugs
 
 - [x] Fix grouping issue when plugin is open in another page other than Play
+- [ ] Fix reset settings when not on Play page (maybe force navigate to Play page)
 - [ ] Test + handle behaviour when templates are missing
 
 ## Features
@@ -69,3 +70,8 @@
 - [ ] Test custom fonts in Figma (IBM Plex Mono, etc.)
 - [x] Finalize (default) timings for memorization and play time
 - [x] Have player names in templates (for archival purposes)
+
+[comment]: # (Design of reset settings)
+[comment]: # (Figma notify messages + emoji 🤔)
+[comment]: # (Keep auto zoom out?)
+[comment]: # (Show color changer, change color on open plugin, etc.)

@@ -1,6 +1,6 @@
 # Figma Competitive Designing Plugin
 
-(TODO: add thumbnail image of plugin here)
+<img width="1552" alt="competitive_design_alpha" src="https://github.com/yihui-hu/figma-competitive-designing/assets/90987235/5ce29ca0-a7e0-4c5f-a419-cbca74198ca9">
 
 ## What is Competitive Designing?
 

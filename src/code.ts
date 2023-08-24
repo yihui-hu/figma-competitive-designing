@@ -61,6 +61,9 @@ figma.ui.onmessage = async (msg) => {
     case "updateSettings":
       updateSettings(msg.checked);
       break;
+    case "resetSettings":
+      resetSettings();
+      break;
     case "cancel":
       figma.closePlugin();
       break;
@@ -287,7 +290,7 @@ async function resetBoard(userCleared: boolean) {
     if (userCleared) sendFigmaMessage("Board reset ✨", 1500);
   } catch (err) {
     console.log(err);
-    sendFigmaMessage("Error resetting board. Please try again.", 1500);
+    sendFigmaMessage("Error resetting board. Please try again 🙏", 1500);
   }
 }
 
@@ -314,7 +317,7 @@ async function updateHeader(times: {
     await figma.clientStorage.setAsync("playtime_text", times.playtime);
   } catch (err) {
     console.log(err);
-    sendFigmaMessage("😵‍💫 Something went wrong. Try resetting the board.", 2500);
+    sendFigmaMessage("Something went wrong. Try resetting the board 😵‍💫", 2500);
   }
 }
 
@@ -334,7 +337,7 @@ async function updateTemplates(index: number) {
     }
   } catch (err) {
     console.log(err);
-    sendFigmaMessage("😵‍💫 Something went wrong. Try resetting the board.", 2500);
+    sendFigmaMessage("Something went wrong. Try resetting the board 😵‍💫", 2500);
   }
 }
 
@@ -357,12 +360,13 @@ function archiveRound() {
     nodes.forEach((node) => archive?.appendChild(node.clone()));
 
     // Create Archived Rounds auto-layout element if not already present
-    let archivedRounds = archive?.findChild((node) => node.name === "Archived Rounds");
+    let archivedRounds = archive?.findChild((node) => node.name === "Archived Rounds") as FrameNode;
     if (archivedRounds === null) {
       const frame = Node.createArchivedRounds();
       archive?.appendChild(frame);
       archivedRounds = frame;
     }
+    archivedRounds.layoutMode = "VERTICAL";
 
     // Move round to Archive Page, group, then add to auto-layout element
     const clonedNodes: SceneNode[] = archive?.findChildren((node) => {
@@ -373,8 +377,43 @@ function archiveRound() {
     (archivedRounds as FrameNode).insertChild(0, groupedNodes);
   } catch (err) {
     console.log(err);
-    sendFigmaMessage("😔 Error archiving round.", 1500);
+    sendFigmaMessage("Error archiving round 😔", 1500);
   }
+}
+
+async function resetSettings() {
+  await figma.clientStorage.setAsync("arena_url", "https://www.are.na/christina/competitive-design-website-repo");
+  await getPageNumber(ARENA_API_BASE_URL, "competitive-design-website-repo");
+  const pages = await figma.clientStorage.getAsync("pages");
+  await figma.clientStorage.setAsync("memo_time", 1);
+  await figma.clientStorage.setAsync("memo_time_text", "30 seconds");
+  await figma.clientStorage.setAsync("playtime", 1);
+  await figma.clientStorage.setAsync("playtime_text", "3 minutes");
+  await figma.clientStorage.setAsync("players", 4);
+  await figma.clientStorage.setAsync("preserve_layout", true);
+  await figma.clientStorage.deleteAsync("player_1_coords");
+  await figma.clientStorage.deleteAsync("player_2_coords");
+  await figma.clientStorage.deleteAsync("player_3_coords");
+  await figma.clientStorage.deleteAsync("player_4_coords");
+  await figma.clientStorage.deleteAsync("player_5_coords");
+  await figma.clientStorage.setAsync("player_1_name", "Player 1");
+  await figma.clientStorage.setAsync("player_2_name", "Player 2");
+  await figma.clientStorage.setAsync("player_3_name", "Player 3");
+  await figma.clientStorage.setAsync("player_4_name", "Player 4");
+  await figma.clientStorage.setAsync("player_5_name", "Player 5");
+
+  const storage = {
+    arena_url: "https://www.are.na/christina/competitive-design-website-repo",
+    players: 4,
+    memo_time: 1,
+    playtime: 1,
+    pages: pages,
+    preserve_layout: true,
+  };
+  figma.ui.postMessage({ type: "storage", storage: storage });
+
+  resetBoard(false);
+  sendFigmaMessage("Settings reset ⚙️", 2000);
 }
 
 function sendFigmaMessage(message: string, time: number) {

@@ -111,6 +111,9 @@
         <input class="switch__toggle" type="checkbox" id="resetToggle" checked>
         <label class="switch__label" for="resetToggle">Preserve layout on reset</label>
       </div>
+      <button id="resetSettings">
+        Reset settings
+      </button>
     </div>
     <hr class="modal_hr">
     <div>
@@ -299,5 +302,9 @@
 
   document.getElementById('cancel').onclick = () => {
     parent.postMessage({ pluginMessage: { type: "cancel" } }, '*')
+  }
+
+  document.getElementById("resetSettings").onclick = () => {
+    parent.postMessage({ pluginMessage: { type: "resetSettings" } }, '*')
   }
 </script>

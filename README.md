@@ -2,6 +2,8 @@
 
 <img width="1552" alt="competitive_design_alpha" src="https://github.com/yihui-hu/figma-competitive-designing/assets/90987235/5ce29ca0-a7e0-4c5f-a419-cbca74198ca9">
 
+⚠️ Currently in the process of refactoring code to use Figma's Widget API!
+
 ## What is Competitive Designing?
 
 Given a screenshot of a design (in this case, a website), you have X amount of time to memorize it and Y amount of time to replicate it. Using online image differentiator tools, whoever's design best matches the original wins.  

@@ -30,5 +30,6 @@ devtool: argv.mode === 'production' ? false : 'inline-source-map',
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
+    clean: true,
   },
 });

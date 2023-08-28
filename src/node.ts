@@ -1,32 +1,50 @@
 /**
  * This file is responsible for creating the timers, source images and
  * blank canvases, templates, etc. in the Figma file.
- * 
+ *
  */
 
 import { TimerProps } from "./interface";
 
 // Reference coordinates as fallback
-const right_x = 1300, left_x = 0
-const timer_first_y = 712, timer_gap = 1783;
-const src_canvas_first_y = 965, src_canvas_gap = 1783;
-function timer_y(i: number) { return timer_first_y + (i - 1) * timer_gap; }
-function src_canvas_y(i: number) { return src_canvas_first_y + (i - 1) * src_canvas_gap; }
+const right_x = 1300,
+  left_x = 0;
+const timer_first_y = 712,
+  timer_gap = 1783;
+const src_canvas_first_y = 965,
+  src_canvas_gap = 1783;
+function timer_y(i: number) {
+  return timer_first_y + (i - 1) * timer_gap;
+}
+function src_canvas_y(i: number) {
+  return src_canvas_first_y + (i - 1) * src_canvas_gap;
+}
 
 // Get playing area page
-const playPage = figma.root.findChild(node => node.name === 'Play') ?? figma.currentPage;
+const playPage =
+  figma.root.findChild((node) => node.name === "Play") ??
+  figma.root.findChild((node) => node.name === "Page 1") ??
+  figma.currentPage;
 const colors: SolidPaint = playPage.backgrounds[0] as SolidPaint;
 
 function createTimer(t: TimerProps) {
-  const refNodeName: string = t.position === "right" ? "source-image-area-" + t.index.toString() : "canvas-area-" + t.index.toString();
-  const refNode = playPage.findAll(n => n.name === refNodeName);
+  const refNodeName: string =
+    t.position === "right"
+      ? "source-image-area-" + t.index.toString()
+      : "canvas-area-" + t.index.toString();
+  const refNode = playPage.findAll((n) => n.name === refNodeName);
   const colors: SolidPaint = playPage.backgrounds[0] as SolidPaint;
   const isLightMode = checkLightMode(colors.color);
 
   const timer = figma.createText();
   timer.name = t.name;
   timer.characters = t.text + t.time;
-  timer.x = refNode[0] !== null ? refNode[0].x : t.position === "right" ? right_x : left_x;
+  timer.x =
+    refNode[0] !== null
+      ? refNode[0].x
+      : t.position === "right"
+      ? right_x
+      : left_x;
   timer.y = refNode[0] !== null ? refNode[0].y - 240 : timer_y(t.index);
   timer.fontSize = 100;
   timer.fills = fill(isLightMode, 0.9);
@@ -38,7 +56,7 @@ function createTimer(t: TimerProps) {
 
 function createSourceImage(image: Image, index: number) {
   const refNodeName: string = "source-image-area-" + index.toString();
-  const refNode = playPage.findAll(n => n.name === refNodeName);
+  const refNode = playPage.findAll((n) => n.name === refNodeName);
 
   const source_img = figma.createRectangle();
   source_img.name = "source-img-" + index.toString();
@@ -60,7 +78,7 @@ function createSourceImage(image: Image, index: number) {
 
 function createPlayerLabel(index: number, playerName: string) {
   const refNodeName: string = "source-image-area-" + index.toString();
-  const refNode = playPage.findAll(n => n.name === refNodeName);
+  const refNode = playPage.findAll((n) => n.name === refNodeName);
   const isLightMode = checkLightMode(colors.color);
 
   const playerLabel = figma.createText();
@@ -77,8 +95,8 @@ function createPlayerLabel(index: number, playerName: string) {
 }
 
 function createCanvas(index: number) {
-  const refNodeName: string = "canvas-area-" + index.toString()
-  const refNode = playPage.findAll(n => n.name === refNodeName);
+  const refNodeName: string = "canvas-area-" + index.toString();
+  const refNode = playPage.findAll((n) => n.name === refNodeName);
 
   const canvas = figma.createFrame();
   canvas.name = "canvas-" + index.toString();
@@ -97,9 +115,9 @@ async function createHeader(memotime: string, playtime: string) {
   const isLightMode = checkLightMode(colors.color);
 
   const header = figma.createText();
-  header.fontName = { family: "IBM Plex Mono", style: "SemiBold" }
+  header.fontName = { family: "IBM Plex Mono", style: "SemiBold" };
   header.name = "Header";
-  header.characters = `You will have ${memotime} to memorize\nthe design and ${playtime} to replicate it.`
+  header.characters = `You will have ${memotime} to memorize\nthe design and ${playtime} to replicate it.`;
   header.x = 0;
   header.y = 40;
   header.fontSize = 100;
@@ -111,7 +129,7 @@ async function createHeader(memotime: string, playtime: string) {
 async function createTemplates(preserveLayout: boolean) {
   await figma.loadFontAsync({ family: "Inter", style: "Regular" });
   await figma.loadFontAsync({ family: "Inter", style: "Bold" });
-  const players = await figma.clientStorage.getAsync("players") ?? 5;
+  const players = (await figma.clientStorage.getAsync("players")) ?? 5;
 
   try {
     // Create templates for 5 players
@@ -121,19 +139,33 @@ async function createTemplates(preserveLayout: boolean) {
       const templateCanvas = createTemplateCanvas(i);
       const templateSourceImage = createTemplateSourceImage(i);
       const templatePlayerLabel = createPlayerLabel(i, playerName);
-      const groupedNodes = figma.group([templateLabel, templateCanvas, templateSourceImage, templatePlayerLabel], playPage);
+      const groupedNodes = figma.group(
+        [
+          templateLabel,
+          templateCanvas,
+          templateSourceImage,
+          templatePlayerLabel,
+        ],
+        playPage
+      );
       groupedNodes.visible = false;
       groupedNodes.name = "Player " + i.toString();
 
       // Position templates accordingly
       if (preserveLayout) {
-        const coordinates = await figma.clientStorage.getAsync(`player_${i}_coords`);
-        groupedNodes.x = coordinates === undefined ? i >= 4 ? 3300 : -400 : coordinates.x;
-        groupedNodes.y = coordinates === undefined ? 965 + (1783 * (i >= 4 ? (i - 4) : (i - 1))) : coordinates.y;
+        const coordinates = await figma.clientStorage.getAsync(
+          `player_${i}_coords`
+        );
+        groupedNodes.x =
+          coordinates === undefined ? (i >= 4 ? 3300 : -400) : coordinates.x;
+        groupedNodes.y =
+          coordinates === undefined
+            ? 965 + 1783 * (i >= 4 ? i - 4 : i - 1)
+            : coordinates.y;
       } else {
         await figma.clientStorage.deleteAsync(`player_${i}_coords`);
         groupedNodes.x = i >= 4 ? 3300 : -400;
-        groupedNodes.y = 965 + (1783 * (i >= 4 ? (i - 4) : (i - 1)));
+        groupedNodes.y = 965 + 1783 * (i >= 4 ? i - 4 : i - 1);
       }
 
       // Hide extra templates given player count
@@ -143,16 +175,24 @@ async function createTemplates(preserveLayout: boolean) {
     }
   } catch (err) {
     console.log(err);
-    figma.notify("Error resetting board. Please duplicate the community file again.", {
-      timeout: 1500,
-      button: { text: "✕", action: () => { return true } }
-    });
+    figma.notify(
+      "Error resetting board. Please duplicate the community file again.",
+      {
+        timeout: 1500,
+        button: {
+          text: "✕",
+          action: () => {
+            return true;
+          },
+        },
+      }
+    );
   }
 }
 
 function createTemplateLabel(num: number) {
   const isLightMode = checkLightMode(colors.color);
-  
+
   const templateNumberBg = figma.createRectangle();
   templateNumberBg.name = "label-bg-" + num.toString();
   templateNumberBg.resize(200, 200);
@@ -162,7 +202,7 @@ function createTemplateLabel(num: number) {
   templateNumberBg.isMask = true;
 
   const templateNumberLabel = figma.createText();
-  templateNumberLabel.fontName = { family: "Inter", style: "Bold" }
+  templateNumberLabel.fontName = { family: "Inter", style: "Bold" };
   templateNumberLabel.name = num.toString();
   templateNumberLabel.characters = num.toString();
   templateNumberLabel.resize(200, 200);
@@ -172,7 +212,10 @@ function createTemplateLabel(num: number) {
   templateNumberLabel.y = 965;
   templateNumberLabel.fontSize = 100;
 
-  const subtraction = figma.subtract([templateNumberLabel, templateNumberBg], playPage);
+  const subtraction = figma.subtract(
+    [templateNumberLabel, templateNumberBg],
+    playPage
+  );
   subtraction.name = "label-group-" + num.toString();
   subtraction.fills = fill(isLightMode, 0.9);
   playPage.appendChild(subtraction);
@@ -204,7 +247,10 @@ function createTemplateCanvas(num: number) {
 
   playPage.appendChild(templateCanvas);
   playPage.appendChild(templateCanvasLabel);
-  const groupedNodes = figma.group([templateCanvas, templateCanvasLabel], playPage);
+  const groupedNodes = figma.group(
+    [templateCanvas, templateCanvasLabel],
+    playPage
+  );
   groupedNodes.name = "canvas-group";
   return groupedNodes;
 }
@@ -216,7 +262,7 @@ function createTemplateSourceImage(num: number) {
   templateSourceImage.name = "source-image-area-" + num.toString();
   templateSourceImage.resize(1000, 1000);
   templateSourceImage.fills = [];
-  templateSourceImage.strokes = strokes(isLightMode, 0.3)
+  templateSourceImage.strokes = strokes(isLightMode, 0.3);
   templateSourceImage.dashPattern = [100, 100];
   templateSourceImage.x = 1300;
   templateSourceImage.y = 965;
@@ -234,7 +280,10 @@ function createTemplateSourceImage(num: number) {
 
   playPage.appendChild(templateSourceImage);
   playPage.appendChild(templateSourceImageLabel);
-  const groupedNodes = figma.group([templateSourceImage, templateSourceImageLabel], playPage);
+  const groupedNodes = figma.group(
+    [templateSourceImage, templateSourceImageLabel],
+    playPage
+  );
   groupedNodes.name = "source-image-group";
   return groupedNodes;
 }
@@ -255,36 +304,58 @@ function createArchivedRounds() {
 }
 
 // Update template colors when background of page changes
-function updateColors(colors: { r: number, g: number, b: number }) {
+function updateColors(colors: { r: number; g: number; b: number }) {
   const isLightMode = checkLightMode(colors);
 
   for (let i = 1; i <= 5; i++) {
     const index = i.toString();
-    const canvasNodes = figma.currentPage.findAll(n => n.name === "canvas-area-" + index) as RectangleNode[];
-    const canvasTexts = figma.currentPage.findAll(n => n.name === "canvas-text-" + index) as TextNode[];
-    const sourceNodes = figma.currentPage.findAll(n => n.name === "source-image-area-" + index) as RectangleNode[];
-    const sourceTexts = figma.currentPage.findAll(n => n.name === "source-image-text-" + index) as TextNode[];
-    const playerLabels = figma.currentPage.findAll(n => n.name === "player-" + index) as TextNode[];
-    const templateLabels = figma.currentPage.findAll(n => n.name === "label-group-" + index) as FrameNode[];
+    const canvasNodes = figma.currentPage.findAll(
+      (n) => n.name === "canvas-area-" + index
+    ) as RectangleNode[];
+    const canvasTexts = figma.currentPage.findAll(
+      (n) => n.name === "canvas-text-" + index
+    ) as TextNode[];
+    const sourceNodes = figma.currentPage.findAll(
+      (n) => n.name === "source-image-area-" + index
+    ) as RectangleNode[];
+    const sourceTexts = figma.currentPage.findAll(
+      (n) => n.name === "source-image-text-" + index
+    ) as TextNode[];
+    const playerLabels = figma.currentPage.findAll(
+      (n) => n.name === "player-" + index
+    ) as TextNode[];
+    const templateLabels = figma.currentPage.findAll(
+      (n) => n.name === "label-group-" + index
+    ) as FrameNode[];
 
-    if (canvasNodes === undefined || 
-        canvasTexts === undefined ||
-        sourceNodes === undefined ||
-        sourceTexts === undefined || 
-        playerLabels === undefined ||
-        templateLabels === undefined) {
+    if (
+      canvasNodes === undefined ||
+      canvasTexts === undefined ||
+      sourceNodes === undefined ||
+      sourceTexts === undefined ||
+      playerLabels === undefined ||
+      templateLabels === undefined
+    ) {
       return;
     }
 
-    for (let canvasNode of canvasNodes) canvasNode.strokes = strokes(isLightMode, 0.9);
-    for (let canvasText of canvasTexts) canvasText.fills = fill(isLightMode, 0.9);
-    for (let sourceNode of sourceNodes) sourceNode.strokes = strokes(isLightMode, 0.9);
-    for (let sourceText of sourceTexts) sourceText.fills = fill(isLightMode, 0.9);
-    for (let playerLabel of playerLabels) playerLabel.fills = fill(isLightMode, 0.9);
-    for (let templateLabel of templateLabels) templateLabel.fills = fill(isLightMode, 0.9);
+    for (let canvasNode of canvasNodes)
+      canvasNode.strokes = strokes(isLightMode, 0.9);
+    for (let canvasText of canvasTexts)
+      canvasText.fills = fill(isLightMode, 0.9);
+    for (let sourceNode of sourceNodes)
+      sourceNode.strokes = strokes(isLightMode, 0.9);
+    for (let sourceText of sourceTexts)
+      sourceText.fills = fill(isLightMode, 0.9);
+    for (let playerLabel of playerLabels)
+      playerLabel.fills = fill(isLightMode, 0.9);
+    for (let templateLabel of templateLabels)
+      templateLabel.fills = fill(isLightMode, 0.9);
   }
 
-  const headers = figma.currentPage.findAll(n => n.name === "Header") as TextNode[];
+  const headers = figma.currentPage.findAll(
+    (n) => n.name === "Header"
+  ) as TextNode[];
   if (headers === undefined) return;
   for (let header of headers) header.fills = fill(isLightMode, 0.9);
 }
@@ -303,18 +374,19 @@ function fill(isLightMode: boolean, opacity: number) {
 
 function strokes(isLightMode: boolean, opacity: number) {
   return [
-    { 
-      type: "SOLID", 
-      color: isLightMode ? { r: 0, g: 0, b: 0 } : { r: 1, g: 1, b: 1 }, 
-      opacity: opacity
-    }
+    {
+      type: "SOLID",
+      color: isLightMode ? { r: 0, g: 0, b: 0 } : { r: 1, g: 1, b: 1 },
+      opacity: opacity,
+    },
   ] as SolidPaint[];
 }
 
 // To determine element colors in light / dark mode, code adapted from
 // https://stackoverflow.com/questions/12043187/how-to-check-if-hex-color-is-too-black
-function checkLightMode(color: { r: number, g: number, b: number }) {
-  const luma = 0.2126 * 255 * color.r + 0.7152 * 255 * color.g + 0.0722 * 255 *  color.b;
+function checkLightMode(color: { r: number; g: number; b: number }) {
+  const luma =
+    0.2126 * 255 * color.r + 0.7152 * 255 * color.g + 0.0722 * 255 * color.b;
   return luma > 60;
 }
 
@@ -328,5 +400,5 @@ export {
   createTemplateCanvas,
   createTemplateSourceImage,
   createArchivedRounds,
-  updateColors
-}
+  updateColors,
+};

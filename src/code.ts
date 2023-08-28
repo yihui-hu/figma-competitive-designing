@@ -41,7 +41,10 @@ getStorage();
 const ARENA_API_BASE_URL = "https://api.are.na/v2";
 
 // Get playing area page
-const playPage = figma.root.findChild((node) => node.name === "Play") ?? figma.currentPage;
+const playPage =
+  figma.root.findChild((node) => node.name === "Play") ??
+  figma.root.findChild((node) => node.name === "Page 1") ??
+  figma.currentPage;
 
 // Listen to messages posted from Figma plugin UI
 figma.ui.onmessage = async (msg) => {
@@ -80,13 +83,19 @@ figma.on("documentchange", async () => {
   if (selectedNode && /Player \d+$/.test(selectedNode.name)) {
     const currentCoordinates = { x: selectedNode.x, y: selectedNode.y };
     const player_number = selectedNode.name.split(" ")[1];
-    await figma.clientStorage.setAsync(`player_${player_number}_coords`, currentCoordinates);
+    await figma.clientStorage.setAsync(
+      `player_${player_number}_coords`,
+      currentCoordinates
+    );
   }
 
   if (selectedNode && /player-\d+$/.test(selectedNode.name)) {
     const currentText = (selectedNode as TextNode).characters;
     const player_number = selectedNode.name.split("-")[1];
-    await figma.clientStorage.setAsync(`player_${player_number}_name`, currentText);
+    await figma.clientStorage.setAsync(
+      `player_${player_number}_name`,
+      currentText
+    );
   }
 
   const colors: SolidPaint = figma.currentPage.backgrounds[0] as SolidPaint;
@@ -96,15 +105,16 @@ figma.on("documentchange", async () => {
 // Set up play area and initiate game
 async function playGame(msg: any) {
   // Clear previous rounds, if any
-  const nodes = playPage.findAll((node) => {
-    return (
-      /source-img-\d+$/.test(node.name) ||
-      /canvas-\d+$/.test(node.name) ||
-      node.name === "playtimer" ||
-      node.name === "memotimer" ||
-      node.name === "countdowntimer"
-    );
-  }) ?? [];
+  const nodes =
+    playPage.findAll((node) => {
+      return (
+        /source-img-\d+$/.test(node.name) ||
+        /canvas-\d+$/.test(node.name) ||
+        node.name === "playtimer" ||
+        node.name === "memotimer" ||
+        node.name === "countdowntimer"
+      );
+    }) ?? [];
   for (const node of nodes) node.remove();
 
   // If starting on new, empty file, initialize board
@@ -145,7 +155,7 @@ async function playGame(msg: any) {
     if (images.length === 0) {
       figma.ui.postMessage({
         type: "error",
-        message: "Are.na channel has no images / links."
+        message: "Are.na channel has no images / links.",
       });
       loading.cancel();
       return;
@@ -157,7 +167,7 @@ async function playGame(msg: any) {
   } catch (err) {
     figma.ui.postMessage({
       type: "error",
-      message: "Are.na channel does not exist."
+      message: "Are.na channel does not exist.",
     });
     loading.cancel();
     return;
@@ -167,94 +177,125 @@ async function playGame(msg: any) {
   figma.ui.hide();
 
   const tree = playPage;
-  const src_imgs = tree.findAll((node) => { return node.name === "source-img" });
-  const canvases = tree.findAll((node) => { return node.name === "canvas" });
-  const memotimers = tree.findAll((node) => { return node.name === "memotimer" });
-  const playtimers = tree.findAll((node) => { return node.name === "playtimer" });
-  const countdowntimers = tree.findAll((node) => { return node.name === "countdowntimer" });
+  const src_imgs = tree.findAll((node) => {
+    return node.name === "source-img";
+  });
+  const canvases = tree.findAll((node) => {
+    return node.name === "canvas";
+  });
+  const memotimers = tree.findAll((node) => {
+    return node.name === "memotimer";
+  });
+  const playtimers = tree.findAll((node) => {
+    return node.name === "playtimer";
+  });
+  const countdowntimers = tree.findAll((node) => {
+    return node.name === "countdowntimer";
+  });
 
   // Main game loop
-  figma.createImageAsync(source_img).then(async (image: Image) => {
-    await figma.loadFontAsync({ family: "Inter", style: "Regular" });
-
-    for (let i = 1; i < num_players + 1; i++) {
-      // Create initial frames for source img, canvas and timers
-      const source_img = Node.createSourceImage(image, i);
-      const timerProps: TimerProps = {
-        name: "countdowntimer",
-        text: "Starting in: ",
-        time: "0:05",
-        position: "right",
-        index: i,
-      };
-      const countdowntimer = Node.createTimer(timerProps);
-      Timer.start(countdowntimer, "Starting in: ");
-      src_imgs.push(source_img);
-      countdowntimers.push(countdowntimer);
-
-      loading.cancel();
-    }
-
-    // Remove countdown timer & create memo timers after countdown
-    setTimeout(() => {
-      for (const src_img of src_imgs) src_img.visible = true;
-      for (const node of countdowntimers) node.remove();
+  figma
+    .createImageAsync(source_img)
+    .then(async (image: Image) => {
+      await figma.loadFontAsync({ family: "Inter", style: "Regular" });
 
       for (let i = 1; i < num_players + 1; i++) {
+        // Create initial frames for source img, canvas and timers
+        const source_img = Node.createSourceImage(image, i);
         const timerProps: TimerProps = {
-          name: "memotimer",
-          text: "Time left: ",
-          time: memotime_text,
+          name: "countdowntimer",
+          text: "Starting in: ",
+          time: "0:05",
           position: "right",
           index: i,
         };
-        const memotimer = Node.createTimer(timerProps);
-        Timer.start(memotimer, "Time left: ");
-        memotimers.push(memotimer);
+        const countdowntimer = Node.createTimer(timerProps);
+        Timer.start(countdowntimer, "Starting in: ");
+        src_imgs.push(source_img);
+        countdowntimers.push(countdowntimer);
+
+        loading.cancel();
       }
-    }, 5000);
 
-    // Hide source images, remove memo timers & create playtime timers
-    setTimeout(() => {
-      for (const src_img of src_imgs) src_img.visible = false;
-      for (const node of memotimers) node.remove();
+      // Remove countdown timer & create memo timers after countdown
+      setTimeout(() => {
+        for (const src_img of src_imgs) src_img.visible = true;
+        for (const node of countdowntimers) node.remove();
 
-      for (let i = 1; i < num_players + 1; i++) {
-        const timerProps: TimerProps = {
-          name: "playtimer",
-          text: "Time left: ",
-          time: playtime_text,
-          position: "left",
-          index: i,
-        };
-        const playtimer = Node.createTimer(timerProps);
-        const canvas = Node.createCanvas(i);
-        canvases.push(canvas);
-        Timer.start(playtimer, "Time left: ");
-        playtimers.push(playtimer);
-      }
-    }, memotime + 5000);
+        for (let i = 1; i < num_players + 1; i++) {
+          const timerProps: TimerProps = {
+            name: "memotimer",
+            text: "Time left: ",
+            time: memotime_text,
+            position: "right",
+            index: i,
+          };
+          const memotimer = Node.createTimer(timerProps);
+          Timer.start(memotimer, "Time left: ");
+          memotimers.push(memotimer);
+        }
+      }, 5000);
 
-    // Set timeout for game duration + show source image once round ends
-    setTimeout(() => {
-      for (const src_img of src_imgs) src_img.visible = true;
-      for (const playtimer of playtimers) playtimer.remove();
+      // Hide source images, remove memo timers & create playtime timers
+      setTimeout(() => {
+        for (const src_img of src_imgs) src_img.visible = false;
+        for (const node of memotimers) node.remove();
 
-      figma.ui.postMessage({ type: "error", message: "" });
-      figma.viewport.scrollAndZoomIntoView(playPage.children);
-      figma.closePlugin();
+        for (let i = 1; i < num_players + 1; i++) {
+          const timerProps: TimerProps = {
+            name: "playtimer",
+            text: "Time left: ",
+            time: playtime_text,
+            position: "left",
+            index: i,
+          };
+          const playtimer = Node.createTimer(timerProps);
+          const canvas = Node.createCanvas(i);
+          canvases.push(canvas);
+          Timer.start(playtimer, "Time left: ");
+          playtimers.push(playtimer);
+        }
+      }, memotime + 5000);
 
-      archiveRound();
-    }, playtime + memotime + 5000);
+      // Set timeout for game duration + show source image once round ends
+      setTimeout(async () => {
+        for (const src_img of src_imgs) src_img.visible = true;
+        for (const playtimer of playtimers) playtimer.remove();
 
-  }).catch((error: any) => {
-    console.log(error);
-    loading.cancel();
-    sendFigmaMessage("😵‍💫 Something went wrong. Try resetting the board.", 2500);
-    setTimeout(() => {
-      figma.closePlugin();
-    }, 3000);
-  });
+        figma.ui.postMessage({ type: "error", message: "" });
+        figma.viewport.scrollAndZoomIntoView(playPage.children);
+        figma.closePlugin();
+
+        archiveRound();
+
+        // // Save version history
+        // const currentDate = new Date();
+        // const year = currentDate.getFullYear();
+        // const month = (currentDate.getMonth() + 1).toString().padStart(2, "0");
+        // const day = currentDate.getDate().toString().padStart(2, "0");
+        // const hours = currentDate.getHours().toString().padStart(2, "0");
+        // const minutes = currentDate.getMinutes().toString().padStart(2, "0");
+        // const seconds = currentDate.getSeconds().toString().padStart(2, "0");
+        // const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+        // await new Promise(r => setTimeout(r, 1000));
+        // await figma.saveVersionHistoryAsync(
+        //   `Round on ${formattedDateTime}`,
+        //   `Memorization time: ${memotime_text}, Play time: ${playtime_text}`
+        // );
+      }, playtime + memotime + 5000);
+    })
+    .catch((error: any) => {
+      console.log(error);
+      loading.cancel();
+      sendFigmaMessage(
+        "😵‍💫 Something went wrong. Try resetting the board.",
+        2500
+      );
+      setTimeout(() => {
+        figma.closePlugin();
+      }, 3000);
+    });
 }
 
 // Get random page number from Are.na channel and save page count to clientStorage
@@ -279,9 +320,24 @@ async function getPageNumber(ARENA_API_BASE_URL: string, channelSlug: string) {
 // Reset board
 async function resetBoard(userCleared: boolean) {
   try {
-    const preserveLayout = await figma.clientStorage.getAsync("preserve_layout");
-    const memotime_text = (await figma.clientStorage.getAsync("memo_time_text")) ?? "30 seconds";
-    const playtime_text = (await figma.clientStorage.getAsync("playtime_text")) ?? "3 minutes";
+    let playPage =
+      figma.root.findChild((node) => node.name === "Play") ??
+      figma.root.findChild((node) => node.name === "Page 1");
+
+    if (playPage === null) {
+      const newPlayPage = figma.createPage();
+      newPlayPage.name = "Play";
+      playPage = newPlayPage;
+    }
+
+    figma.currentPage = playPage;
+    const preserveLayout = await figma.clientStorage.getAsync(
+      "preserve_layout"
+    );
+    const memotime_text =
+      (await figma.clientStorage.getAsync("memo_time_text")) ?? "30 seconds";
+    const playtime_text =
+      (await figma.clientStorage.getAsync("playtime_text")) ?? "3 minutes";
 
     for (const node of playPage.children) node.remove();
     await Node.createHeader(memotime_text, playtime_text);
@@ -302,7 +358,9 @@ async function updateHeader(times: {
   playtime_index: number;
 }) {
   try {
-    const header = playPage.findChild((n) => n.type === "TEXT" && n.name === "Header") as TextNode;
+    const header = playPage.findChild(
+      (n) => n.type === "TEXT" && n.name === "Header"
+    ) as TextNode;
     if (header !== null) {
       await figma.loadFontAsync({ family: "IBM Plex Mono", style: "SemiBold" });
       header.characters = `You will have ${times.memotime} to memorize\nthe design and ${times.playtime} to replicate it.`;
@@ -350,7 +408,7 @@ function archiveRound() {
   try {
     const nodes = playPage.children ?? [];
     let archive = figma.root.findChild((node) => node.name === "Archive");
-    
+
     // Create Archive page if not already present
     if (archive === null) {
       archive = figma.createPage();
@@ -360,7 +418,9 @@ function archiveRound() {
     nodes.forEach((node) => archive?.appendChild(node.clone()));
 
     // Create Archived Rounds auto-layout element if not already present
-    let archivedRounds = archive?.findChild((node) => node.name === "Archived Rounds") as FrameNode;
+    let archivedRounds = archive?.findChild(
+      (node) => node.name === "Archived Rounds"
+    ) as FrameNode;
     if (archivedRounds === null) {
       const frame = Node.createArchivedRounds();
       archive?.appendChild(frame);
@@ -382,7 +442,10 @@ function archiveRound() {
 }
 
 async function resetSettings() {
-  await figma.clientStorage.setAsync("arena_url", "https://www.are.na/christina/competitive-design-website-repo");
+  await figma.clientStorage.setAsync(
+    "arena_url",
+    "https://www.are.na/christina/competitive-design-website-repo"
+  );
   await getPageNumber(ARENA_API_BASE_URL, "competitive-design-website-repo");
   const pages = await figma.clientStorage.getAsync("pages");
   await figma.clientStorage.setAsync("memo_time", 1);
@@ -419,6 +482,11 @@ async function resetSettings() {
 function sendFigmaMessage(message: string, time: number) {
   figma.notify(message, {
     timeout: time,
-    button: { text: "✕", action: () => { return true } },
+    button: {
+      text: "✕",
+      action: () => {
+        return true;
+      },
+    },
   });
 }

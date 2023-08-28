@@ -34,12 +34,13 @@
 - [x] delay appearance of canvas until after the screenshot disappears 
 - [x] Center template number labels using auto layout
 - [x] Reset settings to default in modal (then do we need to preserve layout?)
-- [ ] Cache image links / page number / index (better for no repeats)
+- [ ] Save version history after each round
+- [ ] Explore caching image links / page number / index in storage (better for no repeats)
 
 ## Bugs
 
 - [x] Fix grouping issue when plugin is open in another page other than Play
-- [ ] Fix reset settings when not on Play page (maybe force navigate to Play page)
+- [x] Fix reset settings when not on Play page (maybe force navigate to Play page)
 - [ ] Test + handle behaviour when templates are missing
 
 ## Features

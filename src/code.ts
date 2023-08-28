@@ -104,24 +104,6 @@ figma.on("documentchange", async () => {
 
 // Set up play area and initiate game
 async function playGame(msg: any) {
-  // Clear previous rounds, if any
-  const nodes =
-    playPage.findAll((node) => {
-      return (
-        /source-img-\d+$/.test(node.name) ||
-        /canvas-\d+$/.test(node.name) ||
-        node.name === "playtimer" ||
-        node.name === "memotimer" ||
-        node.name === "countdowntimer"
-      );
-    }) ?? [];
-  for (const node of nodes) node.remove();
-
-  // If starting on new, empty file, initialize board
-  if (playPage.children.length === 0) {
-    resetBoard(false);
-  }
-
   // Get user params
   const memotime = msg.memotime * 1000;
   const memotime_text = msg.memotime_text;
@@ -171,6 +153,24 @@ async function playGame(msg: any) {
     });
     loading.cancel();
     return;
+  }
+
+  // Clear previous rounds, if any
+  const nodes =
+    playPage.findAll((node) => {
+      return (
+        /source-img-\d+$/.test(node.name) ||
+        /canvas-\d+$/.test(node.name) ||
+        node.name === "playtimer" ||
+        node.name === "memotimer" ||
+        node.name === "countdowntimer"
+      );
+    }) ?? [];
+  for (const node of nodes) node.remove();
+
+  // If starting on new, empty file, initialize board
+  if (playPage.children.length === 0) {
+    resetBoard(false);
   }
 
   await figma.clientStorage.setAsync("arena_url", msg.url);
